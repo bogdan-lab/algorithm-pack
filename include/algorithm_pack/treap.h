@@ -5,6 +5,7 @@
 #include <random>
 #include <utility>
 
+namespace alpa {
 /**
  * @brief Realization of the treap (tree + heap) structure as template.
  * Class represents a binary tree, which uses as key, user given key combined
@@ -197,5 +198,5 @@ class Treap {
   std::mt19937_64 rnd_;
   size_t size_ = 0;
 };
-
+}  // namespace alpa
 #endif  // INCLUDE_ALGORITHM_PACK_TREAP_H
