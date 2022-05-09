@@ -1,6 +1,7 @@
 ﻿#ifndef INCLUDE_ALGORITHM_PACK_TREAP_H
 #define INCLUDE_ALGORITHM_PACK_TREAP_H
 
+#include <cassert>
 #include <ctime>
 #include <random>
 #include <utility>
@@ -49,7 +50,11 @@ class Treap {
       new_node->left = splitted.first;
       new_node->right = splitted.second;
     }
-    AddChildToParent(parent, new_node);
+    if (!parent) {
+      root_ = new_node;
+    } else {
+      AddChildToParent(parent, new_node, /*to_left=*/key < parent->item.first);
+    }
     ++size_;
     return &new_node->item.second;
   }
@@ -74,8 +79,16 @@ class Treap {
       }
     }
     if (!curr_ptr) return false;
-    AddChildToParent(parent, Merge(curr_ptr->left, curr_ptr->right));
+    Node* replacement = Merge(curr_ptr->left, curr_ptr->right);
+    if (!parent) {
+      root_ = replacement;
+    } else {
+      AddChildToParent(parent, replacement,
+                       /*to_left=*/key < parent->item.first);
+    }
+    delete curr_ptr;
     --size_;
+    if (!size_) root_ = nullptr;
     return true;
   }
 
@@ -167,18 +180,15 @@ class Treap {
     delete root;
   }
   /**
-   * @brief Adds child to the given parent. If the parent is nullptr, the child
-   * is treated as new root and stored into the corresponding field.
+   * @brief Adds child to the given parent. Parent pointer should not be
+   * nullptr.
    */
-  void AddChildToParent(Node* parent, Node* child) {
-    if (!parent) {
-      root_ = child;
-      return;
-    }
-    if (parent->item.first < child->item.first) {
-      parent->right = child;
-    } else {
+  static void AddChildToParent(Node* parent, Node* child, bool to_left) {
+    assert(parent);
+    if (to_left) {
       parent->left = child;
+    } else {
+      parent->right = child;
     }
   }
 

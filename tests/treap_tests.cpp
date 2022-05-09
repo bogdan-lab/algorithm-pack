@@ -1,11 +1,15 @@
 ﻿#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
 #include "algorithm_pack/treap.h"
 
+using ::testing::IsEmpty;
+using ::testing::IsNull;
+using ::testing::Not;
 using ::testing::NotNull;
 
 TEST(TreapTest, CreateEmpty) {
@@ -17,6 +21,7 @@ TEST(TreapTest, CreateEmpty) {
 TEST(TreapTest, CreateAndFill) {
   std::vector<int> input{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   Treap<int, int> test;
+  test.SetSeed(42);
   for (size_t i = 0; i < input.size(); ++i) {
     int input_val = input[i] * input[i];
     int* val = test.Insert(input[i], input_val);
@@ -26,10 +31,134 @@ TEST(TreapTest, CreateAndFill) {
   }
 }
 
-// TODO Find in empty
-// TODO Insert and find existing
-// TODO Insert and find not existing
-// TODO Insert and modify new and old values
-// TODO Erase from empty
-// TODO Erase existing to the end and check the then it is empty
+TEST(TreapTest, FindInEmpty) {
+  Treap<int, std::string> test;
+  std::string* res = test.Find(5);
+  EXPECT_THAT(res, IsNull());
+}
+
+TEST(TreapTest, FindExisting) {
+  std::vector<int> input{0, 1, 2, 3, 4, 5, 6};
+  std::vector<std::string> vals(input.size());
+  std::transform(input.begin(), input.end(), vals.begin(),
+                 [](int el) { return std::to_string(el); });
+  do {
+    std::next_permutation(vals.begin(), vals.end());
+    Treap<int, std::string> test;
+    for (size_t i = 0; i < input.size(); ++i) {
+      test.SetSeed(input[i]);
+      std::string* res = test.Insert(input[i], vals[i]);
+      ASSERT_THAT(res, NotNull());
+      EXPECT_EQ(*res, vals[i]);
+    }
+    for (size_t i = 0; i < input.size(); ++i) {
+      std::string* res = test.Find(input[i]);
+      ASSERT_THAT(res, NotNull());
+      EXPECT_EQ(*res, vals[i]);
+    }
+  } while (std::next_permutation(input.begin(), input.end()));
+}
+
+TEST(TreapTest, FindNotExisting) {
+  std::vector<int> input{0, 2, 4, 6, 8, 10, 12};
+  std::vector<int> checks{-1, 1, 3, 5, 7, 9, 11, 13};
+  std::vector<std::string> vals{"a", "b", "c", "d", "e", "f", "g"};
+  do {
+    std::next_permutation(vals.begin(), vals.end());
+    Treap<int, std::string> test;
+    for (size_t i = 0; i < input.size(); ++i) {
+      test.SetSeed(input[i]);
+      std::string* res = test.Insert(input[i], vals[i]);
+      ASSERT_THAT(res, NotNull());
+      EXPECT_EQ(*res, vals[i]);
+    }
+    for (const auto& el : checks) {
+      EXPECT_THAT(test.Find(el), IsNull());
+    }
+  } while (std::next_permutation(input.begin(), input.end()));
+}
+
+TEST(TreapTest, InsertAndModifyNewValue) {
+  std::vector<int> input{0, 2, 4, 6, 8, 10, 12};
+  std::vector<std::string> vals{"a", "b", "c", "d", "e", "f", "g"};
+  do {
+    std::next_permutation(vals.begin(), vals.end());
+    Treap<int, std::string> test;
+    for (size_t i = 0; i < input.size(); ++i) {
+      test.SetSeed(input[i]);
+      std::string* val_ptr = test.Insert(input[i], "");
+      ASSERT_THAT(val_ptr, NotNull());
+      *val_ptr = vals[i];
+    }
+    for (size_t i = 0; i < input.size(); ++i) {
+      std::string* res = test.Find(input[i]);
+      ASSERT_THAT(res, NotNull());
+      EXPECT_EQ(*res, vals[i]);
+    }
+    EXPECT_EQ(test.Size(), input.size());
+  } while (std::next_permutation(input.begin(), input.end()));
+}
+
+TEST(TreapTest, InsertAndModifyOldValue) {
+  std::vector<int> input{0, 2, 4, 6, 8, 10, 12};
+  std::vector<std::string> vals{"a", "b", "c", "d", "e", "f", "g"};
+  Treap<int, std::string> test;
+  test.SetSeed(29);
+  for (size_t i = 0; i < input.size(); ++i) {
+    test.Insert(input[i], vals[i]);
+  }
+  size_t count;
+  do {
+    count++;
+    std::string curr_val = std::to_string(count);
+    for (size_t i = 0; i < input.size(); ++i) {
+      std::string* val_ptr = test.Insert(input[i], "");
+      EXPECT_EQ(test.Size(), input.size());
+      ASSERT_THAT(val_ptr, NotNull());
+      EXPECT_THAT(*val_ptr, Not(IsEmpty()));
+      *val_ptr = curr_val;
+    }
+    for (size_t i = 0; i < input.size(); ++i) {
+      std::string* res = test.Find(input[i]);
+      ASSERT_THAT(res, NotNull());
+      EXPECT_EQ(*res, curr_val);
+    }
+  } while (std::next_permutation(input.begin(), input.end()));
+}
+
+TEST(TreapTest, EraseFromEmpty) {
+  Treap<int, int> test;
+  EXPECT_TRUE(test.Empty());
+  EXPECT_EQ(test.Size(), 0);
+  EXPECT_FALSE(test.Erase(25));
+  EXPECT_TRUE(test.Empty());
+  EXPECT_EQ(test.Size(), 0);
+  EXPECT_FALSE(test.Erase(0));
+  EXPECT_FALSE(test.Erase(64));
+  EXPECT_TRUE(test.Empty());
+  EXPECT_EQ(test.Size(), 0);
+}
+
+TEST(TreapTest, EraseAllExisting) {
+  std::vector<int> input{0, 1, 2, 3, 4, 5, 6};
+  std::vector<int> check = input;
+  do {
+    Treap<int, int> test;
+    test.SetSeed(25);
+    for (size_t i = 0; i < input.size(); ++i) {
+      test.Insert(input[i], input[i] * input[i]);
+    }
+    size_t curr_size = input.size();
+    EXPECT_EQ(test.Size(), curr_size);
+    for (const auto& el : check) {
+      EXPECT_TRUE(test.Erase(el));
+      EXPECT_EQ(test.Size(), --curr_size);
+    }
+    EXPECT_TRUE(test.Empty());
+  } while (std::next_permutation(input.begin(), input.end()));
+}
+
 // TODO Erase not existing and check that nothing is changed
+
+// TODO Inserting and deleting from different sizes - want to test situations
+// when we do that with root or with some node, which contains only one child
