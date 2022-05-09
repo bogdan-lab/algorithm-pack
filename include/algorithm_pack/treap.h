@@ -15,6 +15,15 @@
 template <typename K, typename V>
 class Treap {
  public:
+  /**@brief Constructs empty tree.*/
+  Treap() = default;
+
+  ~Treap() { DeleteTree(root_); }
+  /**
+   * @brief Sets seed of the random generator associated with current tree.
+   * Random generator is used for creating priorities.
+   */
+  void SetSeed(uint64_t seed) { rnd_.seed(seed); }
   /**
    * @brief Inserts given (key, value) into the tree. If the given key is
    * laready present in the tree, the later is unchanged. Returns pointer to the
@@ -41,6 +50,7 @@ class Treap {
       new_node->right = splitted.second;
     }
     AddChildToParent(parent, new_node);
+    ++size_;
     return &new_node->item.second;
   }
 
@@ -50,7 +60,6 @@ class Treap {
    * was deleted, false otherwise.
    */
   bool Erase(const K& key) {
-    if (!root_) return false;
     Node* parent = nullptr;
     Node* curr_ptr = root_;
     while (curr_ptr) {
@@ -66,6 +75,7 @@ class Treap {
     }
     if (!curr_ptr) return false;
     AddChildToParent(parent, Merge(curr_ptr->left, curr_ptr->right));
+    --size_;
     return true;
   }
 
@@ -89,8 +99,18 @@ class Treap {
 
   /**@brief Returns true if treap is empty, false otherwise.*/
   bool Empty() const { return root_ == nullptr; }
+  /**@brief Returns number of elements currently stored in the tree.*/
+  size_t Size() const { return size_; }
 
  private:
+  struct Node {
+    Node(const K& k, const V& v, uint64_t p) : item(k, v), priority(p) {}
+
+    std::pair<const K, V> item;
+    uint64_t priority = 0;
+    Node* left = nullptr;
+    Node* right = nullptr;
+  };
   /**
    * @brief Merges two trees passed via their roots.
    * Requires that all keys in the left tree ARE NOT LARGER than keys in the
@@ -134,10 +154,17 @@ class Treap {
       result.second = root;
       result.second->right = root->right;
       auto splitted_left = Split(key, root->left);
-      result.second->first = splitted_left.second;
+      result.second->left = splitted_left.second;
       result.first = splitted_left.first;
     }
     return result;
+  }
+  /**@brief Deletes all nodes beneath the given root.*/
+  static void DeleteTree(Node* root) {
+    if (!root) return;
+    DeleteTree(root->left);
+    DeleteTree(root->right);
+    delete root;
   }
   /**
    * @brief Adds child to the given parent. If the parent is nullptr, the child
@@ -155,18 +182,9 @@ class Treap {
     }
   }
 
-  struct Node {
-    Node(const K& k, const V& v, uint64_t p) : item(k, v), priority(p) {}
-
-    std::pair<const K, V> item;
-    uint64_t priority = 0;
-    Node* left = nullptr;
-    Node* right = nullptr;
-  };
-
-  static std::mt19937_64 rnd_{std::time(nullptr)};
-
   Node* root_ = nullptr;
-}
+  std::mt19937_64 rnd_{std::time(nullptr)};
+  size_t size_ = 0;
+};
 
 #endif  // INCLUDE_ALGORITHM_PACK_TREAP_H
