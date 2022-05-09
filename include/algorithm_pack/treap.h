@@ -2,7 +2,6 @@
 #define INCLUDE_ALGORITHM_PACK_TREAP_H
 
 #include <cassert>
-#include <ctime>
 #include <random>
 #include <utility>
 
@@ -16,8 +15,10 @@
 template <typename K, typename V>
 class Treap {
  public:
-  /**@brief Constructs empty tree.*/
+  /**@brief Constructs empty tree initialized with default seed.*/
   Treap() = default;
+  /**@brief Constructs empty tree initialized with the given seed.*/
+  Treap(uint64_t seed) : rnd_(seed) {}
 
   ~Treap() { DeleteTree(root_); }
   /**
@@ -193,7 +194,7 @@ class Treap {
   }
 
   Node* root_ = nullptr;
-  std::mt19937_64 rnd_{std::time(nullptr)};
+  std::mt19937_64 rnd_;
   size_t size_ = 0;
 };
 
