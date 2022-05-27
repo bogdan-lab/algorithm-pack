@@ -1,5 +1,6 @@
 ﻿add_executable(unit_tests
     treap_tests.cpp
+    implicit_treap_tests.cpp
     )
 
 find_package(GTest REQUIRED CONFIG)
