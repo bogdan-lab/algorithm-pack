@@ -56,7 +56,17 @@ class ImplicitTreap {
       // default constructed iterator. User should not do this.
       assert(curr_node_);
       Node* right = curr_node_->right;
-      if (!right) return right;
+      if (!right) {
+        // Search parent from which we went left
+        Node* node = curr_node_;
+        Node* parent = curr_node_->parent;
+        while (parent) {
+          if (parent->left == node) break;
+          node = parent;
+          parent = node->parent;
+        }
+        return parent;
+      }
       while (right->left) {
         right = right->left;
       }
@@ -67,7 +77,17 @@ class ImplicitTreap {
       // Similarly to GetNext, this should not be called with empty curr_node_
       assert(curr_node_);
       Node* left = curr_node_->left;
-      if (!left) return left;
+      if (!left) {
+        // Search parent from which we went right
+        Node* node = curr_node_;
+        Node* parent = curr_node_->parent;
+        while (parent) {
+          if (parent->right == node) break;
+          node = parent;
+          parent = node->parent;
+        }
+        return parent;
+      }
       while (left->right) {
         left = left->right;
       }
@@ -98,10 +118,17 @@ class ImplicitTreap {
   size_t Size() const { return size_; }
   /**
    * @brief Inserts the given value into given position.
-   * TODO What if the given position is out of range?
-   * TODO Also return pointer to the value?
+   * If the given position is larger or equal to the container size, given value
+   * will be stored as the new last element. Position numeration starts from 0.
    */
-  void Insert(const T& value, size_t pos);
+  T& Insert(const T& value, size_t pos) {
+    ++size_;
+    Node* new_node = new Node(value, /*priority=*/rnd_());
+    auto [left, right] =
+        Split(/*element_number=*/std::min(size_, pos) + 1, root_);
+    root_ = Merge(Merge(left, new_node), right);
+    return new_node->value;
+  }
   /**
    * @brief Deletes the element from the container, which is stored in the given
    * position.
@@ -148,6 +175,7 @@ class ImplicitTreap {
   static size_t GetTreeSize(Node* node) { return node ? node->tree_size : 0; }
   /**@brief Sets size of the given node according to its children*/
   static void FixTreeSize(Node* node) {
+    if (!node) return;
     node->tree_size = GetTreeSize(node->left) + GetTreeSize(node->right) + 1;
   }
   static void FixParent(Node* node) {
@@ -156,10 +184,10 @@ class ImplicitTreap {
     if (node->right) node->right->parent = node;
   }
   /**
-   * @brief Merges two trees passed via their roots.
-   * Requires that all keys in the left tree ARE NOT LARGER than keys in the
-   * right tree.
-   * Can return nullptr if both input parameters are nullptr.
+   * @brief Merges two trees passed via their roots. Merge will be performed in
+   * the manner, that all elements which was in the left tree will precede all
+   * elements in the right tree in case of container traversion. Can return
+   * nullptr if both input parameters are nullptr.
    */
   static Node* Merge(Node* lhs, Node* rhs) {
     if (!lhs) return rhs;
@@ -180,25 +208,26 @@ class ImplicitTreap {
     FixTreeSize(root);
   }
   /**
-   * @brief Splits current tree in two. The first tree in the result contains
-   * all keys which are smaller than key, the second - all the other.
-   * If one of the resulting trees is empty, nullptr is returned.
+   * @brief Splits current tree in two according to the given position.
+   * All elements, which index is smaller than given pos will be in the first
+   * tree and all other elements - in the second.
    */
   static std::pair<Node*, Node*> Split(size_t pos, Node* node) {
     std::pair<Node*, Node*> result{nullptr, nullptr};
     if (!node) return result;
-    if (node->tree_size < pos) {
+    size_t elements_until_this = GetTreeSize(node->left) + 1;
+    if (elements_until_this < pos) {
       // node and its left child should be stored in the first field
       result.first = node;
       result.first->left = node->left;
-      auto [smaller, other] = Split(pos, node->right);
+      auto [smaller, other] = Split(pos - elements_until_this, node->right);
       result.first->right = smaller;
       result.second = other;
     } else {
       // node and its right child should be stored in the right field
       result.second = node;
       result.second->right = node->right;
-      auto [smaller, other] = Split(pos, node->right);
+      auto [smaller, other] = Split(pos, node->left);
       result.second->left = other;
       result.first = smaller;
     }
