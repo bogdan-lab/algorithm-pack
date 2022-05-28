@@ -206,6 +206,7 @@ class ImplicitTreap {
     }
     FixParent(root);
     FixTreeSize(root);
+    return root;
   }
   /**
    * @brief Splits current tree in two according to the given position.
