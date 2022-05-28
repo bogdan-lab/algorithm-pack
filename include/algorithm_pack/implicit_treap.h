@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <random>
+#include <utility>
 
 namespace alpa {
 /**
@@ -100,13 +101,13 @@ class ImplicitTreap {
    * TODO What if the given position is out of range?
    * TODO Also return pointer to the value?
    */
-  void Insert(const T& value, int pos);
+  void Insert(const T& value, size_t pos);
   /**
    * @brief Deletes the element from the container, which is stored in the given
    * position.
    * TODO What if the given position is out of range?
    */
-  void Erase(int pos);
+  void Erase(size_t pos);
   /**
    * @brief Performs cyclic rotation of the container on the given position
    * number to the right. If the given number is less than 0, the cyclic
@@ -116,6 +117,7 @@ class ImplicitTreap {
   /**
    * @brief Gets begin iterator of the container. The iterator should not be
    * dereferenced in case if the container is empty.
+   * TODO Are iterators invalidated after insrtion/delition?
    */
   Iterator Begin() {
     Node* node = root_;
@@ -128,6 +130,7 @@ class ImplicitTreap {
   /**
    * @brief Gets past the end iterator of the container. The iterator should
    * never be dereferenced.
+   * TODO Study interator invalidation
    */
   Iterator End() { return {}; }
 
@@ -138,10 +141,73 @@ class ImplicitTreap {
     Node* left = nullptr;
     Node* right = nullptr;
     Node* parent = nullptr;
-    size_t tree_size = 0;
+    size_t tree_size = 1;  // includes current node
     uint64_t priority = 0;
     T value;
   };
+  static size_t GetTreeSize(Node* node) { return node ? node->tree_size : 0; }
+  /**@brief Sets size of the given node according to its children*/
+  static void FixTreeSize(Node* node) {
+    node->tree_size = GetTreeSize(node->left) + GetTreeSize(node->right) + 1;
+  }
+  static void FixParent(Node* node) {
+    if (!node) return;
+    if (node->left) node->left->parent = node;
+    if (node->right) node->right->parent = node;
+  }
+  /**
+   * @brief Merges two trees passed via their roots.
+   * Requires that all keys in the left tree ARE NOT LARGER than keys in the
+   * right tree.
+   * Can return nullptr if both input parameters are nullptr.
+   */
+  static Node* Merge(Node* lhs, Node* rhs) {
+    if (!lhs) return rhs;
+    if (!rhs) return lhs;
+    Node* root = nullptr;
+    if (lhs->priority > rhs->priority) {
+      // lhs root should be on top
+      root = lhs;
+      root->left = lhs->left;
+      root->right = Merge(lhs->right, rhs);
+    } else {
+      // rhs root should be on top
+      root = rhs;
+      root->right = rhs->right;
+      root->left = Merge(lhs, rhs->left);
+    }
+    FixParent(root);
+    FixTreeSize(root);
+  }
+  /**
+   * @brief Splits current tree in two. The first tree in the result contains
+   * all keys which are smaller than key, the second - all the other.
+   * If one of the resulting trees is empty, nullptr is returned.
+   */
+  static std::pair<Node*, Node*> Split(size_t pos, Node* node) {
+    std::pair<Node*, Node*> result{nullptr, nullptr};
+    if (!node) return result;
+    if (node->tree_size < pos) {
+      // node and its left child should be stored in the first field
+      result.first = node;
+      result.first->left = node->left;
+      auto [smaller, other] = Split(pos, node->right);
+      result.first->right = smaller;
+      result.second = other;
+    } else {
+      // node and its right child should be stored in the right field
+      result.second = node;
+      result.second->right = node->right;
+      auto [smaller, other] = Split(pos, node->right);
+      result.second->left = other;
+      result.first = smaller;
+    }
+    FixParent(result.first);
+    FixTreeSize(result.first);
+    FixParent(result.second);
+    FixTreeSize(result.second);
+    return result;
+  }
 
   static void DeleteTree(Node* root) {
     if (!root) return;
