@@ -37,13 +37,13 @@ TEST(TreapTest, FindInEmpty) {
 }
 
 TEST(TreapTest, FindExisting) {
-  std::vector<int> input{0, 1, 2, 3, 4, 5, 6};
+  std::vector<uint32_t> input{0, 1, 2, 3, 4, 5, 6};
   std::vector<std::string> vals(input.size());
   std::transform(input.begin(), input.end(), vals.begin(),
-                 [](int el) { return std::to_string(el); });
+                 [](uint32_t el) { return std::to_string(el); });
   do {
     std::next_permutation(vals.begin(), vals.end());
-    alpa::Treap<int, std::string> test(/*seed=*/input.front());
+    alpa::Treap<uint32_t, std::string> test(/*seed=*/input.front());
     for (size_t i = 0; i < input.size(); ++i) {
       std::string* res = test.Insert(input[i], vals[i]);
       ASSERT_THAT(res, NotNull());
@@ -58,12 +58,12 @@ TEST(TreapTest, FindExisting) {
 }
 
 TEST(TreapTest, FindNotExisting) {
-  std::vector<int> input{0, 2, 4, 6, 8, 10, 12};
-  std::vector<int> checks{-1, 1, 3, 5, 7, 9, 11, 13};
+  std::vector<uint32_t> input{2, 4, 6, 8, 10, 12, 14};
+  std::vector<uint32_t> checks{1, 3, 5, 7, 9, 11, 13, 15};
   std::vector<std::string> vals{"a", "b", "c", "d", "e", "f", "g"};
   do {
     std::next_permutation(vals.begin(), vals.end());
-    alpa::Treap<int, std::string> test(/*seed=*/input.front());
+    alpa::Treap<uint32_t, std::string> test(/*seed=*/input.front());
     for (size_t i = 0; i < input.size(); ++i) {
       std::string* res = test.Insert(input[i], vals[i]);
       ASSERT_THAT(res, NotNull());
@@ -76,11 +76,11 @@ TEST(TreapTest, FindNotExisting) {
 }
 
 TEST(TreapTest, InsertAndModifyNewValue) {
-  std::vector<int> input{0, 2, 4, 6, 8, 10, 12};
+  std::vector<uint32_t> input{0, 2, 4, 6, 8, 10, 12};
   std::vector<std::string> vals{"a", "b", "c", "d", "e", "f", "g"};
   do {
     std::next_permutation(vals.begin(), vals.end());
-    alpa::Treap<int, std::string> test(/*seed=*/input.front());
+    alpa::Treap<uint32_t, std::string> test(/*seed=*/input.front());
     for (size_t i = 0; i < input.size(); ++i) {
       std::string* val_ptr = test.Insert(input[i], "");
       ASSERT_THAT(val_ptr, NotNull());
@@ -102,7 +102,7 @@ TEST(TreapTest, InsertAndModifyOldValue) {
   for (size_t i = 0; i < input.size(); ++i) {
     test.Insert(input[i], vals[i]);
   }
-  size_t count;
+  size_t count = 0;
   do {
     count++;
     std::string curr_val = std::to_string(count);
