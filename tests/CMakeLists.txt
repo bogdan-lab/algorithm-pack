@@ -8,4 +8,9 @@ gtest_discover_tests(unit_tests)
 
 find_package(GTest REQUIRED CONFIG)
 
-target_link_libraries(unit_tests PRIVATE algo_pack GTest::gtest_main GTest::gmock)
+target_link_libraries(unit_tests
+                        PRIVATE
+                          algo_pack
+                          GTest::gtest_main
+                          GTest::gmock
+                          project_warnings)
