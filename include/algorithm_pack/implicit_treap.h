@@ -168,6 +168,22 @@ class ImplicitTreap {
     return new_node->value;
   }
   /**
+   * @brief Returns reference to the element stored in the given position.
+   * The given positions has to be valid, this is it has to be smaller than
+   * number of elements in the treap. Position numeration starts from 0.
+   * Complexity is O(log n).
+   */
+  T& operator[](size_t pos) {
+    assert(root_);
+    assert(pos < size_);
+    return GetElement(root_, pos + 1)->value;
+  }
+  const T& operator[](size_t pos) const {
+    assert(root_);
+    assert(pos < size_);
+    return GetElement(root_, pos + 1)->value;
+  }
+  /**
    * @brief Deletes the element from the container, which is stored in the given
    * position.
    * TODO What if the given position is out of range?
@@ -261,25 +277,27 @@ class ImplicitTreap {
   }
   /**
    * @brief Splits current tree in two according to the given position.
-   * All elements, which index is smaller than given pos will be in the first
+   * All elements, which number is smaller than given pos will be in the first
    * tree and all other elements - in the second.
+   * Note that element number, unlike element index, starts from 1.
    */
-  static std::pair<Node*, Node*> Split(size_t pos, Node* node) {
+  static std::pair<Node*, Node*> Split(size_t el_number, Node* node) {
     std::pair<Node*, Node*> result{nullptr, nullptr};
     if (!node) return result;
     size_t elements_until_this = GetTreeSize(node->left) + 1;
-    if (elements_until_this < pos) {
+    if (elements_until_this < el_number) {
       // node and its left child should be stored in the first field
       result.first = node;
       result.first->left = node->left;
-      auto [smaller, other] = Split(pos - elements_until_this, node->right);
+      auto [smaller, other] =
+          Split(el_number - elements_until_this, node->right);
       result.first->right = smaller;
       result.second = other;
     } else {
       // node and its right child should be stored in the right field
       result.second = node;
       result.second->right = node->right;
-      auto [smaller, other] = Split(pos, node->left);
+      auto [smaller, other] = Split(el_number, node->left);
       result.second->left = other;
       result.first = smaller;
     }
@@ -355,6 +373,22 @@ class ImplicitTreap {
       root = root->right;
     }
     return root;
+  }
+  /**
+   * @brief Gets the node with the given element number.
+   * Note that element number, unlike element index, starts from 1.
+   */
+  static Node* GetElement(Node* root, size_t el_number) {
+    assert(el_number > 0);
+    if (!root) return nullptr;
+    int curr_el_number = GetTreeSize(root->left) + 1;
+    if (el_number < curr_el_number) {
+      return GetElement(root->left, el_number);
+    } else if (el_number > curr_el_number) {
+      return GetElement(root->right, el_number - curr_el_number);
+    } else {
+      return root;
+    }
   }
 
   Node* root_ = nullptr;

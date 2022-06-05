@@ -147,3 +147,26 @@ TEST(ImplicitTreapTest, Constructors3) {
   test = std::move(x);
   EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
 }
+
+TEST(ImplicitTreapTest, ElementAccess1) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+  alpa::ImplicitTreap<int> test = CreateTreap(input);
+  const alpa::ImplicitTreap<int> ctest = CreateTreap(input);
+  for (size_t i = 0; i < input.size(); ++i) {
+    EXPECT_EQ(test[i], input[i]);
+    EXPECT_EQ(ctest[i], input[i]);
+  }
+}
+
+TEST(ImplicitTreapTest, ElementAccess2) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+  alpa::ImplicitTreap<int> test = CreateTreap(input);
+  int special_val = 22564;
+  for (size_t i = 0; i < test.Size(); ++i) {
+    if (i % 2) {
+      test[i] = special_val;
+      input[i] = special_val;
+    }
+  }
+  EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+}
