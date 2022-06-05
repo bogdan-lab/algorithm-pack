@@ -38,12 +38,7 @@ TEST(ImplicitTreapTest, PushBack) {
   }
   EXPECT_FALSE(test.Empty());
   EXPECT_EQ(test.Size(), input.size());
-  std::vector<int> result;
-  result.reserve(test.Size());
-  for (auto it = test.Begin(); it != test.End(); ++it) {
-    result.push_back(*it);
-  }
-  EXPECT_THAT(result, ElementsAreArray(input));
+  EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
 }
 
 TEST(ImplicitTreapTest, PushFront) {
@@ -54,12 +49,8 @@ TEST(ImplicitTreapTest, PushFront) {
   }
   EXPECT_FALSE(test.Empty());
   EXPECT_EQ(test.Size(), input.size());
-  std::vector<int> result;
-  result.reserve(test.Size());
-  for (auto it = test.Begin(); it != test.End(); ++it) {
-    result.push_back(*it);
-  }
-  EXPECT_THAT(result, ElementsAreArray(input.rbegin(), input.rend()));
+  EXPECT_THAT(test.ConvertToVector(),
+              ElementsAreArray(input.rbegin(), input.rend()));
 }
 
 TEST(ImplicitTreapTest, InsertInside) {
@@ -71,19 +62,11 @@ TEST(ImplicitTreapTest, InsertInside) {
     }
     return res;
   };
-  auto conv_to_vec = [](alpa::ImplicitTreap<int>& tr) {
-    std::vector<int> res;
-    res.reserve(tr.Size());
-    for (auto it = tr.Begin(); it != tr.End(); ++it) {
-      res.push_back(*it);
-    }
-    return res;
-  };
 
   for (size_t i = 1; i < input.size(); ++i) {
     alpa::ImplicitTreap<int> test = create_treap(input);
     test.Insert(1024, i);
-    std::vector<int> res = conv_to_vec(test);
+    std::vector<int> res = test.ConvertToVector();
     ASSERT_GT(res.size(), i);
     EXPECT_EQ(res[i], 1024) << " i = " << i;
   }

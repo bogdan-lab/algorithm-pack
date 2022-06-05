@@ -26,9 +26,11 @@ class ImplicitTreap {
    public:
     friend class ImplicitTreap;
     friend bool operator==(const ConstIterator& lhs, const ConstIterator& rhs) {
+      assert(lhs.host_ == rhs.host_);
       return lhs.curr_node_ == rhs.curr_node_;
     }
     friend bool operator!=(const ConstIterator& lhs, const ConstIterator& rhs) {
+      assert(lhs.host_ == rhs.host_);
       return lhs.curr_node_ != rhs.curr_node_;
     }
     /**@brief Creates empty iterator*/
@@ -72,9 +74,11 @@ class ImplicitTreap {
    public:
     friend class ImplicitTreap;
     friend bool operator==(const Iterator& lhs, const Iterator& rhs) {
+      assert(lhs.host_ == rhs.host_);
       return lhs.curr_node_ == rhs.curr_node_;
     }
     friend bool operator!=(const Iterator& lhs, const Iterator& rhs) {
+      assert(lhs.host_ == rhs.host_);
       return lhs.curr_node_ != rhs.curr_node_;
     }
     /**@brief Creates empty iterator*/
@@ -176,6 +180,18 @@ class ImplicitTreap {
   Iterator End() { return Iterator{nullptr, this}; }
   ConstIterator End() const { return ConstIterator{nullptr, this}; }
   ConstIterator CEnd() const { return ConstIterator{nullptr, this}; }
+  /**
+   * @brief Converts the structure into vector by copying each element into one.
+   * Complexity O(n), where n is the number of elements in the treap.
+   */
+  std::vector<T> ConvertToVector() const {
+    std::vector<T> result;
+    result.reserve(Size());
+    for (auto it = CBegin(); it != CEnd(); ++it) {
+      result.push_back(*it);
+    }
+    return result;
+  }
 
  private:
   struct Node {
