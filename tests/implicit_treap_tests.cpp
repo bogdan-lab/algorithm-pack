@@ -1,11 +1,24 @@
 ﻿#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <utility>
 #include <vector>
 
 #include "algorithm_pack/implicit_treap.h"
 
 using ::testing::ElementsAreArray;
+
+namespace {
+template <typename T>
+alpa::ImplicitTreap<T> CreateTreap(const std::vector<T>& input,
+                                   uint64_t seed = 314) {
+  alpa::ImplicitTreap<T> res(seed);
+  for (const auto& el : input) {
+    res.Insert(el, res.Size());
+  }
+  return res;
+}
+}  // namespace
 
 TEST(ImplicitTreapTest, CreateEmpty) {
   alpa::ImplicitTreap<int> test;
@@ -55,16 +68,8 @@ TEST(ImplicitTreapTest, PushFront) {
 
 TEST(ImplicitTreapTest, InsertInside) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
-  auto create_treap = [](const std::vector<int>& input) {
-    alpa::ImplicitTreap<int> res(314);
-    for (const auto& el : input) {
-      res.Insert(el, res.Size());
-    }
-    return res;
-  };
-
   for (size_t i = 1; i < input.size(); ++i) {
-    alpa::ImplicitTreap<int> test = create_treap(input);
+    alpa::ImplicitTreap<int> test = CreateTreap(input);
     test.Insert(1024, i);
     std::vector<int> res = test.ConvertToVector();
     ASSERT_GT(res.size(), i);
@@ -74,10 +79,7 @@ TEST(ImplicitTreapTest, InsertInside) {
 
 TEST(ImplicitTreapTest, IteratorWalk1) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
-  alpa::ImplicitTreap<int> x;
-  for (const auto& el : input) {
-    x.Insert(el, input.size());
-  }
+  alpa::ImplicitTreap<int> x = CreateTreap(input);
   alpa::ImplicitTreap<int>::Iterator begin = x.Begin();
   alpa::ImplicitTreap<int>::ConstIterator cbegin = begin;
   for (const auto& el : input) {
@@ -90,10 +92,7 @@ TEST(ImplicitTreapTest, IteratorWalk1) {
 
 TEST(ImplicitTreapTest, IteratorWalk2) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
-  alpa::ImplicitTreap<int> x;
-  for (const auto& el : input) {
-    x.Insert(el, input.size());
-  }
+  alpa::ImplicitTreap<int> x = CreateTreap(input);
   alpa::ImplicitTreap<int>::Iterator begin = x.Begin();
   alpa::ImplicitTreap<int>::ConstIterator cbegin = x.CBegin();
   for (const auto& el : input) {
@@ -104,10 +103,7 @@ TEST(ImplicitTreapTest, IteratorWalk2) {
 
 TEST(ImplicitTreapTest, IteratorWalk3) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
-  alpa::ImplicitTreap<int> x;
-  for (const auto& el : input) {
-    x.Insert(el, input.size());
-  }
+  alpa::ImplicitTreap<int> x = CreateTreap(input);
   alpa::ImplicitTreap<int>::Iterator last = --x.End();
   alpa::ImplicitTreap<int>::ConstIterator clast = --x.CEnd();
   for (auto it = input.rbegin(); it != input.rend(); ++it) {
@@ -120,14 +116,34 @@ TEST(ImplicitTreapTest, IteratorWalk3) {
 
 TEST(ImplicitTreapTest, IteratorWalk4) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
-  alpa::ImplicitTreap<int> x;
-  for (const auto& el : input) {
-    x.Insert(el, input.size());
-  }
+  alpa::ImplicitTreap<int> x = CreateTreap(input);
   alpa::ImplicitTreap<int>::Iterator last = --x.End();
   alpa::ImplicitTreap<int>::ConstIterator clast = --x.CEnd();
   for (auto it = input.rbegin(); it != input.rend(); ++it) {
     EXPECT_EQ(*it, *last);
     EXPECT_EQ(*last--, *clast--);
   }
+}
+
+TEST(ImplicitTreapTest, Constructors1) {
+  alpa::ImplicitTreap<int> x;
+  alpa::ImplicitTreap<int> test(std::move(x));
+  EXPECT_TRUE(test.Empty());
+  alpa::ImplicitTreap<int> test2 = std::move(test);
+  EXPECT_TRUE(test2.Empty());
+}
+
+TEST(ImplicitTreapTest, Constructors2) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
+  alpa::ImplicitTreap<int> x = CreateTreap(input);
+  alpa::ImplicitTreap<int> test(std::move(x));
+  EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+}
+
+TEST(ImplicitTreapTest, Constructors3) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
+  alpa::ImplicitTreap<int> x = CreateTreap(input);
+  alpa::ImplicitTreap<int> test = CreateTreap(std::vector<int>{10, 20});
+  test = std::move(x);
+  EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
 }

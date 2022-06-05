@@ -120,6 +120,25 @@ class ImplicitTreap {
   ImplicitTreap() = default;
   /**@brief Creates an empty treap with the given seed set in random generator*/
   ImplicitTreap(uint64_t seed) : rnd_(seed) {}
+  ImplicitTreap(const ImplicitTreap& other) = delete;
+  ImplicitTreap& operator=(const ImplicitTreap& other) = delete;
+  ImplicitTreap(ImplicitTreap&& other) {
+    root_ = std::exchange(other.root_, nullptr);
+    rnd_ = std::move(other.rnd_);
+    size_ = std::exchange(other.size_, 0);
+  }
+  /**
+   * @brief Does nothing if the two structures share same root.
+   * Here we do not care about situation when two structure crossects.
+   */
+  ImplicitTreap& operator=(ImplicitTreap&& other) {
+    if (other.root_ == root_) return *this;
+    DeleteTree(root_);
+    root_ = std::exchange(other.root_, nullptr);
+    rnd_ = std::move(other.rnd_);
+    size_ = std::exchange(other.size_, 0);
+    return *this;
+  }
 
   ~ImplicitTreap() {
     DeleteTree(root_);
@@ -136,7 +155,7 @@ class ImplicitTreap {
   /**@brief Gets the number of elements in the container.*/
   size_t Size() const { return size_; }
   /**
-   * @brief Inserts the given value into given position.
+   * @brief Inserts the given value into given position by copying it.
    * If the given position is larger or equal to the container size, given value
    * will be stored as the new last element. Position numeration starts from 0.
    */
