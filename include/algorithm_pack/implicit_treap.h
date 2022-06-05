@@ -34,29 +34,35 @@ class ImplicitTreap {
     /**@brief Creates empty iterator*/
     ConstIterator() = default;
     ConstIterator& operator++() {
-      curr_node_ = GetNextNode(curr_node_);
+      curr_node_ = ImplicitTreap::GetNextNode(curr_node_);
       return *this;
     }
     ConstIterator operator++(int) {
       const Node* old_node = curr_node_;
-      curr_node_ = GetNextNode(curr_node_);
-      return ConstIterator{old_node};
+      curr_node_ = ImplicitTreap::GetNextNode(curr_node_);
+      return ConstIterator{old_node, host_};
     }
     ConstIterator& operator--() {
-      curr_node_ = GetPrevNode(curr_node_);
+      assert(host_);
+      curr_node_ = curr_node_ ? ImplicitTreap::GetPrevNode(curr_node_)
+                              : ImplicitTreap::FindLastNode(host_->root_);
       return *this;
     }
     ConstIterator operator--(int) {
+      assert(host_);
       const Node* old_node = curr_node_;
-      curr_node_ = GetPrevNode(curr_node_);
-      return ConstIterator{old_node};
+      curr_node_ = curr_node_ ? ImplicitTreap::GetPrevNode(curr_node_)
+                              : ImplicitTreap::FindLastNode(host_->root_);
+      return ConstIterator{old_node, host_};
     }
     const T& operator*() const { return curr_node_->value; }
 
    private:
-    explicit ConstIterator(const Node* node) : curr_node_(node) {}
+    explicit ConstIterator(const Node* node, const ImplicitTreap* host)
+        : curr_node_(node), host_(host) {}
 
     const Node* curr_node_ = nullptr;
+    const ImplicitTreap* host_ = nullptr;
   };
   /**
    * @brief Represents bidirectional iterator for the ImplicitTreap structure.
@@ -73,31 +79,37 @@ class ImplicitTreap {
     }
     /**@brief Creates empty iterator*/
     Iterator() = default;
-    operator ConstIterator() const { return ConstIterator{curr_node_}; }
+    operator ConstIterator() const { return ConstIterator{curr_node_, host_}; }
     Iterator& operator++() {
-      curr_node_ = GetNextNode(curr_node_);
+      curr_node_ = ImplicitTreap::GetNextNode(curr_node_);
       return *this;
     }
     Iterator operator++(int) {
       Node* old_node = curr_node_;
-      curr_node_ = GetNextNode(curr_node_);
-      return Iterator{old_node};
+      curr_node_ = ImplicitTreap::GetNextNode(curr_node_);
+      return Iterator{old_node, host_};
     }
     Iterator& operator--() {
-      curr_node_ = GetPrevNode(curr_node_);
+      assert(host_);
+      curr_node_ = curr_node_ ? ImplicitTreap::GetPrevNode(curr_node_)
+                              : ImplicitTreap::FindLastNode(host_->root_);
       return *this;
     }
     Iterator operator--(int) {
+      assert(host_);
       Node* old_node = curr_node_;
-      curr_node_ = GetPrevNode(curr_node_);
-      return Iterator{old_node};
+      curr_node_ = curr_node_ ? ImplicitTreap::GetPrevNode(curr_node_)
+                              : ImplicitTreap::FindLastNode(host_->root_);
+      return Iterator{old_node, host_};
     }
     T& operator*() { return curr_node_->value; }
 
    private:
-    explicit Iterator(Node* node) : curr_node_(node) {}
+    explicit Iterator(Node* node, ImplicitTreap* host)
+        : curr_node_(node), host_(host) {}
 
     Node* curr_node_ = nullptr;
+    ImplicitTreap* host_ = nullptr;
   };
 
   /**@brief Creates an empty treap.*/
@@ -149,17 +161,21 @@ class ImplicitTreap {
    * dereferenced in case if the container is empty.
    * TODO Are iterators invalidated after insrtion/delition?
    */
-  Iterator Begin() { return Iterator{FindFirstNode(root_)}; }
-  ConstIterator Begin() const { return ConstIterator{FindFirstNode(root_)}; }
-  ConstIterator CBegin() const { return ConstIterator{FindFirstNode(root_)}; }
+  Iterator Begin() { return Iterator{FindFirstNode(root_), this}; }
+  ConstIterator Begin() const {
+    return ConstIterator{FindFirstNode(root_), this};
+  }
+  ConstIterator CBegin() const {
+    return ConstIterator{FindFirstNode(root_), this};
+  }
   /**
    * @brief Gets past the end iterator of the container. The iterator should
    * never be dereferenced.
    * TODO Study interator invalidation
    */
-  Iterator End() { return {}; }
-  ConstIterator End() const { return {}; }
-  ConstIterator CEnd() const { return {}; }
+  Iterator End() { return Iterator{nullptr, this}; }
+  ConstIterator End() const { return ConstIterator{nullptr, this}; }
+  ConstIterator CEnd() const { return ConstIterator{nullptr, this}; }
 
  private:
   struct Node {
@@ -294,6 +310,14 @@ class ImplicitTreap {
     if (!root) return root;
     while (root->left) {
       root = root->left;
+    }
+    return root;
+  }
+
+  static Node* FindLastNode(Node* root) {
+    if (!root) return root;
+    while (root->right) {
+      root = root->right;
     }
     return root;
   }

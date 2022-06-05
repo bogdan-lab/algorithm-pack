@@ -89,7 +89,7 @@ TEST(ImplicitTreapTest, InsertInside) {
   }
 }
 
-TEST(ImplicitTreapTest, IteratorConversion1) {
+TEST(ImplicitTreapTest, IteratorWalk1) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
   alpa::ImplicitTreap<int> x;
   for (const auto& el : input) {
@@ -105,28 +105,28 @@ TEST(ImplicitTreapTest, IteratorConversion1) {
   }
 }
 
-TEST(ImplicitTreapTest, IteratorConversion2) {
+TEST(ImplicitTreapTest, IteratorWalk2) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
   alpa::ImplicitTreap<int> x;
   for (const auto& el : input) {
     x.Insert(el, input.size());
   }
   alpa::ImplicitTreap<int>::Iterator begin = x.Begin();
-  alpa::ImplicitTreap<int>::ConstIterator cbegin = begin;
+  alpa::ImplicitTreap<int>::ConstIterator cbegin = x.CBegin();
   for (const auto& el : input) {
     EXPECT_EQ(el, *begin);
     EXPECT_EQ(*begin++, *cbegin++);
   }
 }
 
-TEST(ImplicitTreapTest, IteratorConversion3) {
+TEST(ImplicitTreapTest, IteratorWalk3) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
   alpa::ImplicitTreap<int> x;
   for (const auto& el : input) {
     x.Insert(el, input.size());
   }
-  alpa::ImplicitTreap<int>::Iterator last = std::prev(x.End());
-  alpa::ImplicitTreap<int>::ConstIterator clast = std::prev(x.CEnd());
+  alpa::ImplicitTreap<int>::Iterator last = --x.End();
+  alpa::ImplicitTreap<int>::ConstIterator clast = --x.CEnd();
   for (auto it = input.rbegin(); it != input.rend(); ++it) {
     EXPECT_EQ(*it, *last);
     EXPECT_EQ(*last, *clast);
@@ -135,14 +135,14 @@ TEST(ImplicitTreapTest, IteratorConversion3) {
   }
 }
 
-TEST(ImplicitTreapTest, IteratorConversion4) {
+TEST(ImplicitTreapTest, IteratorWalk4) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
   alpa::ImplicitTreap<int> x;
   for (const auto& el : input) {
     x.Insert(el, input.size());
   }
-  alpa::ImplicitTreap<int>::Iterator last = std::prev(x.End());
-  alpa::ImplicitTreap<int>::ConstIterator clast = std::prev(x.CEnd());
+  alpa::ImplicitTreap<int>::Iterator last = --x.End();
+  alpa::ImplicitTreap<int>::ConstIterator clast = --x.CEnd();
   for (auto it = input.rbegin(); it != input.rend(); ++it) {
     EXPECT_EQ(*it, *last);
     EXPECT_EQ(*last--, *clast--);
