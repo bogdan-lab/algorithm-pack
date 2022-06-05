@@ -88,3 +88,63 @@ TEST(ImplicitTreapTest, InsertInside) {
     EXPECT_EQ(res[i], 1024) << " i = " << i;
   }
 }
+
+TEST(ImplicitTreapTest, IteratorConversion1) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
+  alpa::ImplicitTreap<int> x;
+  for (const auto& el : input) {
+    x.Insert(el, input.size());
+  }
+  alpa::ImplicitTreap<int>::Iterator begin = x.Begin();
+  alpa::ImplicitTreap<int>::ConstIterator cbegin = begin;
+  for (const auto& el : input) {
+    EXPECT_EQ(el, *begin);
+    EXPECT_EQ(*begin, *cbegin);
+    ++begin;
+    ++cbegin;
+  }
+}
+
+TEST(ImplicitTreapTest, IteratorConversion2) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
+  alpa::ImplicitTreap<int> x;
+  for (const auto& el : input) {
+    x.Insert(el, input.size());
+  }
+  alpa::ImplicitTreap<int>::Iterator begin = x.Begin();
+  alpa::ImplicitTreap<int>::ConstIterator cbegin = begin;
+  for (const auto& el : input) {
+    EXPECT_EQ(el, *begin);
+    EXPECT_EQ(*begin++, *cbegin++);
+  }
+}
+
+TEST(ImplicitTreapTest, IteratorConversion3) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
+  alpa::ImplicitTreap<int> x;
+  for (const auto& el : input) {
+    x.Insert(el, input.size());
+  }
+  alpa::ImplicitTreap<int>::Iterator last = std::prev(x.End());
+  alpa::ImplicitTreap<int>::ConstIterator clast = std::prev(x.CEnd());
+  for (auto it = input.rbegin(); it != input.rend(); ++it) {
+    EXPECT_EQ(*it, *last);
+    EXPECT_EQ(*last, *clast);
+    --last;
+    --clast;
+  }
+}
+
+TEST(ImplicitTreapTest, IteratorConversion4) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
+  alpa::ImplicitTreap<int> x;
+  for (const auto& el : input) {
+    x.Insert(el, input.size());
+  }
+  alpa::ImplicitTreap<int>::Iterator last = std::prev(x.End());
+  alpa::ImplicitTreap<int>::ConstIterator clast = std::prev(x.CEnd());
+  for (auto it = input.rbegin(); it != input.rend(); ++it) {
+    EXPECT_EQ(*it, *last);
+    EXPECT_EQ(*last--, *clast--);
+  }
+}

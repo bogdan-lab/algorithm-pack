@@ -17,6 +17,51 @@ class ImplicitTreap {
   struct Node;
 
  public:
+  /**
+   * @brief Represents constant bidirectional iterator for the ImplicitTreap
+   * structure.
+   * TODO what about iterator invalidation????
+   */
+  class ConstIterator {
+   public:
+    friend class ImplicitTreap;
+    friend bool operator==(const ConstIterator& lhs, const ConstIterator& rhs) {
+      return lhs.curr_node_ == rhs.curr_node_;
+    }
+    friend bool operator!=(const ConstIterator& lhs, const ConstIterator& rhs) {
+      return lhs.curr_node_ != rhs.curr_node_;
+    }
+    /**@brief Creates empty iterator*/
+    ConstIterator() = default;
+    ConstIterator& operator++() {
+      curr_node_ = GetNextNode(curr_node_);
+      return *this;
+    }
+    ConstIterator operator++(int) {
+      const Node* old_node = curr_node_;
+      curr_node_ = GetNextNode(curr_node_);
+      return ConstIterator{old_node};
+    }
+    ConstIterator& operator--() {
+      curr_node_ = GetPrevNode(curr_node_);
+      return *this;
+    }
+    ConstIterator operator--(int) {
+      const Node* old_node = curr_node_;
+      curr_node_ = GetPrevNode(curr_node_);
+      return ConstIterator{old_node};
+    }
+    const T& operator*() const { return curr_node_->value; }
+
+   private:
+    explicit ConstIterator(const Node* node) : curr_node_(node) {}
+
+    const Node* curr_node_ = nullptr;
+  };
+  /**
+   * @brief Represents bidirectional iterator for the ImplicitTreap structure.
+   * TODO what about iterator invalidation????
+   */
   class Iterator {
    public:
     friend class ImplicitTreap;
@@ -28,71 +73,29 @@ class ImplicitTreap {
     }
     /**@brief Creates empty iterator*/
     Iterator() = default;
+    operator ConstIterator() const { return ConstIterator{curr_node_}; }
     Iterator& operator++() {
-      curr_node_ = GetNext();
+      curr_node_ = GetNextNode(curr_node_);
       return *this;
     }
     Iterator operator++(int) {
       Node* old_node = curr_node_;
-      curr_node_ = GetNext();
-      return {old_node};
+      curr_node_ = GetNextNode(curr_node_);
+      return Iterator{old_node};
     }
     Iterator& operator--() {
-      curr_node_ = GetPrev();
+      curr_node_ = GetPrevNode(curr_node_);
       return *this;
     }
     Iterator operator--(int) {
       Node* old_node = curr_node_;
-      curr_node_ = GetPrev();
-      return {old_node};
+      curr_node_ = GetPrevNode(curr_node_);
+      return Iterator{old_node};
     }
     T& operator*() { return curr_node_->value; }
 
    private:
     explicit Iterator(Node* node) : curr_node_(node) {}
-    /**Returns the next node in the tree*/
-    Node* GetNext() const {
-      // if curr_node_ here is nullptr we are searching next from end or from
-      // default constructed iterator. User should not do this.
-      assert(curr_node_);
-      Node* right = curr_node_->right;
-      if (!right) {
-        // Search parent from which we went left
-        Node* node = curr_node_;
-        Node* parent = curr_node_->parent;
-        while (parent) {
-          if (parent->left == node) break;
-          node = parent;
-          parent = node->parent;
-        }
-        return parent;
-      }
-      while (right->left) {
-        right = right->left;
-      }
-      return right;
-    }
-    /**Returns the previous node in the tree*/
-    Node* GetPrev() const {
-      // Similarly to GetNext, this should not be called with empty curr_node_
-      assert(curr_node_);
-      Node* left = curr_node_->left;
-      if (!left) {
-        // Search parent from which we went right
-        Node* node = curr_node_;
-        Node* parent = curr_node_->parent;
-        while (parent) {
-          if (parent->right == node) break;
-          node = parent;
-          parent = node->parent;
-        }
-        return parent;
-      }
-      while (left->right) {
-        left = left->right;
-      }
-      return left;
-    }
 
     Node* curr_node_ = nullptr;
   };
@@ -146,20 +149,17 @@ class ImplicitTreap {
    * dereferenced in case if the container is empty.
    * TODO Are iterators invalidated after insrtion/delition?
    */
-  Iterator Begin() {
-    Node* node = root_;
-    if (!node) return {};
-    while (node->left) {
-      node = node->left;
-    }
-    return Iterator{node};
-  }
+  Iterator Begin() { return Iterator{FindFirstNode(root_)}; }
+  ConstIterator Begin() const { return ConstIterator{FindFirstNode(root_)}; }
+  ConstIterator CBegin() const { return ConstIterator{FindFirstNode(root_)}; }
   /**
    * @brief Gets past the end iterator of the container. The iterator should
    * never be dereferenced.
    * TODO Study interator invalidation
    */
   Iterator End() { return {}; }
+  ConstIterator End() const { return {}; }
+  ConstIterator CEnd() const { return {}; }
 
  private:
   struct Node {
@@ -244,6 +244,58 @@ class ImplicitTreap {
     DeleteTree(root->left);
     DeleteTree(root->right);
     delete root;
+  }
+  /**
+   * @warning Method expects that curr_node is not null.
+   */
+  static Node* GetNextNode(const Node* curr_node) {
+    assert(curr_node);
+    Node* right = curr_node->right;
+    if (!right) {
+      // Search parent from which we went left
+      const Node* node = curr_node;
+      Node* parent = curr_node->parent;
+      while (parent) {
+        if (parent->left == node) break;
+        node = parent;
+        parent = node->parent;
+      }
+      return parent;
+    }
+    while (right->left) {
+      right = right->left;
+    }
+    return right;
+  }
+  /**
+   * @warning Method expects that curr_node is not null.
+   */
+  static Node* GetPrevNode(const Node* curr_node) {
+    assert(curr_node);
+    Node* left = curr_node->left;
+    if (!left) {
+      // Search parent from which we went right
+      const Node* node = curr_node;
+      Node* parent = curr_node->parent;
+      while (parent) {
+        if (parent->right == node) break;
+        node = parent;
+        parent = node->parent;
+      }
+      return parent;
+    }
+    while (left->right) {
+      left = left->right;
+    }
+    return left;
+  }
+
+  static Node* FindFirstNode(Node* root) {
+    if (!root) return root;
+    while (root->left) {
+      root = root->left;
+    }
+    return root;
   }
 
   Node* root_ = nullptr;
