@@ -186,9 +186,18 @@ class ImplicitTreap {
   /**
    * @brief Deletes the element from the container, which is stored in the given
    * position.
-   * TODO What if the given position is out of range?
+   *
+   * Method expects that given position is valid, this is its value is in range
+   * [0, treap_size). Complexity O(log n)
    */
-  void Erase(size_t pos);
+  void Erase(size_t pos) {
+    assert(root_);
+    std::pair<Node*, Node*> first_split = Split(pos + 1, root_);
+    std::pair<Node*, Node*> second_split = Split(2, first_split.second);
+    delete second_split.first;
+    root_ = Merge(first_split.first, second_split.second);
+    --size_;
+  }
   /**
    * @brief Performs cyclic rotation of the container on the given position
    * number to the right. If the given number is less than 0, the cyclic
@@ -277,9 +286,9 @@ class ImplicitTreap {
   }
   /**
    * @brief Splits current tree in two according to the given position.
-   * All elements, which number is smaller than given pos will be in the first
-   * tree and all other elements - in the second.
-   * Note that element number, unlike element index, starts from 1.
+   * All elements, which number is smaller than given el_number will be in the
+   * first tree and all other elements - in the second. Note that element
+   * number, unlike element index, starts from 1.
    */
   static std::pair<Node*, Node*> Split(size_t el_number, Node* node) {
     std::pair<Node*, Node*> result{nullptr, nullptr};

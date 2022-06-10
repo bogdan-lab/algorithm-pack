@@ -170,3 +170,37 @@ TEST(ImplicitTreapTest, ElementAccess2) {
   }
   EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
 }
+
+TEST(ImplicitTreapTest, EraseFromBack) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+  alpa::ImplicitTreap<int> test = CreateTreap(input);
+  while (!input.empty()) {
+    test.Erase(input.size() - 1);
+    input.pop_back();
+    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+  }
+  EXPECT_TRUE(test.Empty());
+}
+
+TEST(ImplicitTreapTest, EraseFromFront) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+  alpa::ImplicitTreap<int> test = CreateTreap(input);
+  while (!input.empty()) {
+    test.Erase(0);
+    input.erase(input.begin());
+    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+  }
+  EXPECT_TRUE(test.Empty());
+}
+
+TEST(ImplicitTreapTest, EraseFromTheMiddle) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+  alpa::ImplicitTreap<int> test = CreateTreap(input);
+  while (!input.empty()) {
+    size_t index = input.size() / 2;
+    test.Erase(index);
+    input.erase(input.begin() + index);
+    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+  }
+  EXPECT_TRUE(test.Empty());
+}
