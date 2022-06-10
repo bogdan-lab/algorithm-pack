@@ -200,10 +200,31 @@ class ImplicitTreap {
   }
   /**
    * @brief Performs cyclic rotation of the container on the given position
-   * number to the right. If the given number is less than 0, the cyclic
-   * rotation to the left will be performed.
+   * number to the right.
+   *
+   * count sign defins the direction of the rotaiton:
+   * count = 1 results in [1, 2, 3, 4] -> [4, 1, 2, 3]
+   * count = -1 results in [1, 2, 3, 4] -> [2, 3, 4, 1]
+   * count = 0 - does nothing
+   *
+   * Method should not be called on the empty treap
+   * count can have absolute value larger than treap size. Complexity O(log n).
    */
-  void Rotate(int count);
+  void Rotate(int count) {
+    if (count == 0) {
+      return;
+    } else if (count > 0) {
+      count = count % size_;
+      if (!count) return;
+      std::pair<Node*, Node*> split = Split(size_ - count + 1, root_);
+      root_ = Merge(split.second, split.first);
+    } else {
+      count = -count % size_;
+      if (!count) return;
+      std::pair<Node*, Node*> split = Split(count + 1, root_);
+      root_ = Merge(split.second, split.first);
+    }
+  }
   /**
    * @brief Gets begin iterator of the container. The iterator should not be
    * dereferenced in case if the container is empty.

@@ -1,11 +1,13 @@
 ﻿#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
 #include "algorithm_pack/implicit_treap.h"
 
+using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 
 namespace {
@@ -203,4 +205,53 @@ TEST(ImplicitTreapTest, EraseFromTheMiddle) {
     EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
   }
   EXPECT_TRUE(test.Empty());
+}
+
+TEST(ImplicitTreapTest, RotatePositiveDirection) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+  alpa::ImplicitTreap<int> test = CreateTreap(input);
+  for (int i = 1; i < input.size(); ++i) {
+    test.Rotate(i);
+    std::rotate(input.begin(), input.end() - i, input.end());
+    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+  }
+}
+
+TEST(ImplicitTreapTest, RotateNegativeDirection) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+  alpa::ImplicitTreap<int> test = CreateTreap(input);
+  for (int i = 1; i < input.size(); ++i) {
+    test.Rotate(-i);
+    std::rotate(input.begin(), input.begin() + i, input.end());
+    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+  }
+}
+
+TEST(ImplicitTreapTest, RotateCountlargerThanSize) {
+  std::vector<int> input{1, 2, 3, 4};
+  {
+    alpa::ImplicitTreap<int> test = CreateTreap(input);
+    test.Rotate(5);
+    EXPECT_THAT(test.ConvertToVector(), ElementsAre(4, 1, 2, 3));
+  }
+  {
+    alpa::ImplicitTreap<int> test = CreateTreap(input);
+    test.Rotate(7);
+    EXPECT_THAT(test.ConvertToVector(), ElementsAre(2, 3, 4, 1));
+  }
+  {
+    alpa::ImplicitTreap<int> test = CreateTreap(input);
+    test.Rotate(-5);
+    EXPECT_THAT(test.ConvertToVector(), ElementsAre(2, 3, 4, 1));
+  }
+  {
+    alpa::ImplicitTreap<int> test = CreateTreap(input);
+    test.Rotate(-7);
+    EXPECT_THAT(test.ConvertToVector(), ElementsAre(4, 1, 2, 3));
+  }
+  {
+    alpa::ImplicitTreap<int> test = CreateTreap(input);
+    test.Rotate(0);
+    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+  }
 }
