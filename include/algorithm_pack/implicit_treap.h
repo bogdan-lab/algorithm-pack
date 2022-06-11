@@ -7,10 +7,11 @@
 
 namespace alpa {
 /**
- * @brief Realization of a treap with an implicit key. Basically the structure
- * is an node based array with improved asymptotic complexity of some
- * operations. In current realization, insertion, deletion and rotation have
- * O(log n) complexity, where n is container size.
+ * @brief Realization of a treap with an implicit key.
+ *
+ * Basically the structure is an node based array with improved asymptotic
+ * complexity of some operations. In current realization, insertion, deletion
+ * and rotation have O(log n) complexity, where n is container size.
  */
 template <typename T>
 class ImplicitTreap {
@@ -33,33 +34,77 @@ class ImplicitTreap {
       assert(lhs.host_ == rhs.host_);
       return lhs.curr_node_ != rhs.curr_node_;
     }
-    /**@brief Creates empty iterator*/
+    /**
+     * @brief Creates empty iterator. It is invalid. Therefore result of
+     * dereferencing or comparing operations is not specified.
+     */
     ConstIterator() = default;
+    /**
+     * @brief Performs pre-increment operation. Should be called only on valid
+     * iterators.
+     *
+     * @return ConstIterator& reference to the incremented iterator.
+     */
     ConstIterator& operator++() {
       curr_node_ = ImplicitTreap::GetNextNode(curr_node_);
       return *this;
     }
+    /**
+     * @brief Performs post-increment operation. Should be called only on valid
+     * iterators.
+     *
+     * @return ConstIterator the instance of the iterator before it was
+     * incremented.
+     */
     ConstIterator operator++(int) {
       const Node* old_node = curr_node_;
       curr_node_ = ImplicitTreap::GetNextNode(curr_node_);
       return ConstIterator{old_node, host_};
     }
+    /**
+     * @brief Performs pre-decrement operation. Should be called only on valid
+     * iterators.
+     *
+     * @return ConstIterator& reference to the decremented iterator.
+     */
     ConstIterator& operator--() {
       assert(host_);
+      assert(host_->root_);
       curr_node_ = curr_node_ ? ImplicitTreap::GetPrevNode(curr_node_)
                               : ImplicitTreap::FindLastNode(host_->root_);
       return *this;
     }
+    /**
+     * @brief Performs post-decrement operation. Should be called only on valid
+     * iterators.
+     *
+     * @return ConstIterator the instance of the iterator before it was
+     * decremented.
+     */
     ConstIterator operator--(int) {
       assert(host_);
+      assert(host_->root_);
       const Node* old_node = curr_node_;
       curr_node_ = curr_node_ ? ImplicitTreap::GetPrevNode(curr_node_)
                               : ImplicitTreap::FindLastNode(host_->root_);
       return ConstIterator{old_node, host_};
     }
+    /**
+     * @brief Dereferences this iterator. Should be called only on valid
+     * iterator.
+     *
+     * @return const T& reference to the value stored in the given position.
+     */
     const T& operator*() const { return curr_node_->value; }
 
    private:
+    /**
+     * @brief Construct a new ConstIterator object for the given treap.
+     *
+     * @param node - will be used as current iterator node
+     * @param host - pointer to the treap, so we can properly iterate backwards
+     * starting from the end() iterator.
+     */
     explicit ConstIterator(const Node* node, const ImplicitTreap* host)
         : curr_node_(node), host_(host) {}
 
@@ -81,34 +126,84 @@ class ImplicitTreap {
       assert(lhs.host_ == rhs.host_);
       return lhs.curr_node_ != rhs.curr_node_;
     }
-    /**@brief Creates empty iterator*/
+    /**
+     * @brief Creates empty iterator. It is invalid. Therefore result of
+     * dereferencing or comparing operations is not specified.
+     */
     Iterator() = default;
+    /**
+     * @brief Converts modifiable iterator to the constant by creating the
+     * later.
+     *
+     * @return ConstIterator object created from this iterator.
+     */
     operator ConstIterator() const { return ConstIterator{curr_node_, host_}; }
+    /**
+     * @brief Performs pre-increment operation. Should be called only on valid
+     * iterators.
+     *
+     * @return Iterator& reference to the incremented iterator.
+     */
     Iterator& operator++() {
       curr_node_ = ImplicitTreap::GetNextNode(curr_node_);
       return *this;
     }
+    /**
+     * @brief Performs post-increment operation. Should be called only on valid
+     * iterators.
+     *
+     * @return Iterator the instance of the iterator before it was
+     * incremented.
+     */
     Iterator operator++(int) {
       Node* old_node = curr_node_;
       curr_node_ = ImplicitTreap::GetNextNode(curr_node_);
       return Iterator{old_node, host_};
     }
+    /**
+     * @brief Performs pre-decrement operation. Should be called only on valid
+     * iterators.
+     *
+     * @return Iterator& reference to the decremented iterator.
+     */
     Iterator& operator--() {
       assert(host_);
+      assert(host_->root_);
       curr_node_ = curr_node_ ? ImplicitTreap::GetPrevNode(curr_node_)
                               : ImplicitTreap::FindLastNode(host_->root_);
       return *this;
     }
+    /**
+     * @brief Performs post-decrement operation. Should be called only on valid
+     * iterators.
+     *
+     * @return Iterator the instance of the iterator before it was
+     * decremented.
+     */
     Iterator operator--(int) {
       assert(host_);
+      assert(host_->root_);
       Node* old_node = curr_node_;
       curr_node_ = curr_node_ ? ImplicitTreap::GetPrevNode(curr_node_)
                               : ImplicitTreap::FindLastNode(host_->root_);
       return Iterator{old_node, host_};
     }
+    /**
+     * @brief Dereferences this iterator. Should be called only on valid
+     * iterator.
+     *
+     * @return T& reference to the value stored in the given position.
+     */
     T& operator*() { return curr_node_->value; }
 
    private:
+    /**
+     * @brief Construct a new Iterator object for the given treap.
+     *
+     * @param node - will be used as a current iterator node.
+     * @param host - pointer to the treap, so we can properly iterate from the
+     * backwards starting from the end()
+     */
     explicit Iterator(Node* node, ImplicitTreap* host)
         : curr_node_(node), host_(host) {}
 
@@ -116,12 +211,22 @@ class ImplicitTreap {
     ImplicitTreap* host_ = nullptr;
   };
 
-  /**@brief Creates an empty treap.*/
+  /**
+   * @brief Creates an empty treap.
+   */
   ImplicitTreap() = default;
-  /**@brief Creates an empty treap with the given seed set in random generator*/
+  /**
+   * @brief Creates an empty treap with the given seed set in the random
+   * generator
+   */
   ImplicitTreap(uint64_t seed) : rnd_(seed) {}
   ImplicitTreap(const ImplicitTreap& other) = delete;
   ImplicitTreap& operator=(const ImplicitTreap& other) = delete;
+  /**
+   * @brief Construct a new Implicit Treap object by moving data from other.
+   *
+   * @param other - object from which data is moved from.
+   */
   ImplicitTreap(ImplicitTreap&& other) {
     root_ = std::exchange(other.root_, nullptr);
     rnd_ = std::move(other.rnd_);
@@ -129,7 +234,23 @@ class ImplicitTreap {
   }
   /**
    * @brief Does nothing if the two structures share same root.
-   * Here we do not care about situation when two structure crossects.
+   * @note Method does not consider situation when two structures have some
+   * common nodes. Here we do not care about situation when two structure
+   * crossects.
+   */
+  void func();
+  /**
+   * @brief Replaces current treap data by the data from other. Old data is
+   * destroyed.
+   *
+   * Does nothing if this treap and othe has the same root. Note that check for
+   * the root equality is the only which is performed. In other words, operator
+   * does not consider situations when two treaps share same nodes deeper in the
+   * structure.
+   *
+   * @param other - object from which data is moved from.
+   * @return ImplicitTreap& reference to the new treap, which contains data from
+   * other.
    */
   ImplicitTreap& operator=(ImplicitTreap&& other) {
     if (other.root_ == root_) return *this;
@@ -139,7 +260,10 @@ class ImplicitTreap {
     size_ = std::exchange(other.size_, 0);
     return *this;
   }
-
+  /**
+   * @brief Destroy the Implicit Treap object by destroying each value it
+   * stored.
+   */
   ~ImplicitTreap() {
     DeleteTree(root_);
     root_ = nullptr;
@@ -178,6 +302,9 @@ class ImplicitTreap {
     assert(pos < size_);
     return GetElement(root_, pos + 1)->value;
   }
+  /**
+   * @overload
+   */
   const T& operator[](size_t pos) const {
     assert(root_);
     assert(pos < size_);
@@ -259,6 +386,9 @@ class ImplicitTreap {
   }
 
  private:
+  /**
+   * @brief Describes single element stored in the treap.
+   */
   struct Node {
     Node(const T& val, uint64_t p) : priority(p), value(val) {}
 
@@ -388,7 +518,12 @@ class ImplicitTreap {
     }
     return left;
   }
-
+  /**
+   * @brief Returns the first element in the given treap.
+   *
+   * @param root - root of the given treap. Can be nullptr.
+   * @return Node* pointer to the first node in the treap. Can return nullptr.
+   */
   static Node* FindFirstNode(Node* root) {
     if (!root) return root;
     while (root->left) {
@@ -396,9 +531,14 @@ class ImplicitTreap {
     }
     return root;
   }
-
+  /**
+   * @brief Returns the last node in the given treap.
+   *
+   * @param root - root of the given treap. Has to be valid pointer.
+   * @return Node* pointer to the last node. Cannot be nullptr.
+   */
   static Node* FindLastNode(Node* root) {
-    if (!root) return root;
+    assert(root);
     while (root->right) {
       root = root->right;
     }
