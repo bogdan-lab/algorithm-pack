@@ -233,13 +233,6 @@ class ImplicitTreap {
     size_ = std::exchange(other.size_, 0);
   }
   /**
-   * @brief Does nothing if the two structures share same root.
-   * @note Method does not consider situation when two structures have some
-   * common nodes. Here we do not care about situation when two structure
-   * crossects.
-   */
-  void func();
-  /**
    * @brief Replaces current treap data by the data from other. Old data is
    * destroyed.
    *
@@ -280,8 +273,13 @@ class ImplicitTreap {
   size_t Size() const { return size_; }
   /**
    * @brief Inserts the given value into given position by copying it.
-   * If the given position is larger or equal to the container size, given value
-   * will be stored as the new last element. Position numeration starts from 0.
+   * Complexity O(log n)
+   *
+   * @param value - actual value which needs to be placed into the treap.
+   * @param pos - position where the new element should be inserted. If the
+   * given position is larger than the container size, new element will be
+   * stored as the new last element. Position numeration starts from 0.
+   * @return T& reference to the value stored in the container.
    */
   T& Insert(const T& value, size_t pos) {
     ++size_;
@@ -293,9 +291,11 @@ class ImplicitTreap {
   }
   /**
    * @brief Returns reference to the element stored in the given position.
-   * The given positions has to be valid, this is it has to be smaller than
-   * number of elements in the treap. Position numeration starts from 0.
-   * Complexity is O(log n).
+   * Complexity O(log n)
+   *
+   * @param pos - position of the requested element. Given position should be
+   * valid, this is it should be in the range [0, Size()).
+   * @return T& reference to the stored element
    */
   T& operator[](size_t pos) {
     assert(root_);
@@ -312,10 +312,10 @@ class ImplicitTreap {
   }
   /**
    * @brief Deletes the element from the container, which is stored in the given
-   * position.
+   * position. Complexity O(log n)
    *
-   * Method expects that given position is valid, this is its value is in range
-   * [0, treap_size). Complexity O(log n)
+   * @param pos - position of the element to be deleted. Method expects that
+   * given position is valid, this is its value is in range [0, treap_size).
    */
   void Erase(size_t pos) {
     assert(root_);
@@ -335,7 +335,8 @@ class ImplicitTreap {
    * count = 0 - does nothing
    *
    * Method should not be called on the empty treap
-   * count can have absolute value larger than treap size. Complexity O(log n).
+   * @param count - number of positions we need to rotate the container. We can
+   * have absolute value larger than treap size. Complexity O(log n).
    */
   void Rotate(int count) {
     if (count == 0) {
@@ -353,28 +354,43 @@ class ImplicitTreap {
     }
   }
   /**
-   * @brief Gets begin iterator of the container. The iterator should not be
-   * dereferenced in case if the container is empty.
+   * @brief Gets begin iterator of the container. Complexity O(log n).
    * TODO Are iterators invalidated after insrtion/delition?
    */
   Iterator Begin() { return Iterator{FindFirstNode(root_), this}; }
+  /**
+   * @overload
+   */
   ConstIterator Begin() const {
     return ConstIterator{FindFirstNode(root_), this};
   }
+  /**
+   * @brief Gets ContantIterator to the container. Complexity O(log n);
+   *
+   * @return ConstIterator
+   */
   ConstIterator CBegin() const {
     return ConstIterator{FindFirstNode(root_), this};
   }
   /**
-   * @brief Gets past the end iterator of the container. The iterator should
-   * never be dereferenced.
+   * @brief Gets past the end iterator of the container. Complexity constant.
    * TODO Study interator invalidation
    */
   Iterator End() { return Iterator{nullptr, this}; }
+  /**
+   * @overload
+   */
   ConstIterator End() const { return ConstIterator{nullptr, this}; }
+  /**
+   * @brief Gets ConstantIterator to the container. Complexity constant.
+   *
+   * @return ConstIterator
+   */
   ConstIterator CEnd() const { return ConstIterator{nullptr, this}; }
   /**
    * @brief Converts the structure into vector by copying each element into one.
-   * Complexity O(n), where n is the number of elements in the treap.
+   * Complexity O(n).
+   * @return Created vector, which containes all elements from the treap.
    */
   std::vector<T> ConvertToVector() const {
     std::vector<T> result;
@@ -391,30 +407,50 @@ class ImplicitTreap {
    */
   struct Node {
     Node(const T& val, uint64_t p) : priority(p), value(val) {}
-
     Node* left = nullptr;
     Node* right = nullptr;
     Node* parent = nullptr;
-    size_t tree_size = 1;  // includes current node
+    /**Number of elements in this node subtree, including itself.*/
+    size_t tree_size = 1;
     uint64_t priority = 0;
     T value;
   };
+  /**
+   * @brief Calculates the tree size of the subtree which corresponds to the
+   * given node.
+   *
+   * @param node - root of the tree which is processed. Can be nullptr.
+   * @return size_t number of elements in the given tree.
+   */
   static size_t GetTreeSize(Node* node) { return node ? node->tree_size : 0; }
-  /**@brief Sets size of the given node according to its children*/
+  /**
+   * @brief Sets size of the given node according to its children
+   * @param node - node needed to be fixed. Cannot be nullptr.
+   */
   static void FixTreeSize(Node* node) {
-    if (!node) return;
     node->tree_size = GetTreeSize(node->left) + GetTreeSize(node->right) + 1;
   }
+  /**
+   * @brief Sets parent field of the given node childrens
+   *
+   * @param node - node which is needed to be fixed. Cannot be nullptr.
+   */
   static void FixParent(Node* node) {
-    if (!node) return;
     if (node->left) node->left->parent = node;
     if (node->right) node->right->parent = node;
   }
   /**
-   * @brief Merges two trees passed via their roots. Merge will be performed in
-   * the manner, that all elements which was in the left tree will precede all
-   * elements in the right tree in case of container traversion. Can return
-   * nullptr if both input parameters are nullptr.
+   * @brief Merges two trees passed via their roots.
+   *
+   * Merge will be performed in the manner, that all elements which was in the
+   * left tree will precede all elements in the right tree in case of container
+   * traversion.  No elements are copied. Method only rearranges pointers.
+   * Complexity O(log n)
+   *
+   * @param lhs - root of the left treap
+   * @param rhs - root of the right treap
+   * @return Node* root of the merged treap. Can return nullptr, if both input
+   * treaps are empty.
    */
   static Node* Merge(Node* lhs, Node* rhs) {
     if (!lhs) return rhs;
@@ -436,10 +472,16 @@ class ImplicitTreap {
     return root;
   }
   /**
-   * @brief Splits current tree in two according to the given position.
-   * All elements, which number is smaller than given el_number will be in the
-   * first tree and all other elements - in the second. Note that element
-   * number, unlike element index, starts from 1.
+   * @brief Splits current tree in two according to the given element number.
+   *
+   * All elements, which number is smaller than given one will be in the
+   * first tree and all other elements - in the second.  Complexity O(log n).
+   *
+   * @param el_number - element number according to which treap is being
+   * splitted. Note that element number, unlike element index, starts from 1.
+   * @param node - root of the treap, which is being splitted.
+   * @return Roots of two treaps in which the original one was splitted. The
+   * resulting pair can contain nullptr.
    */
   static std::pair<Node*, Node*> Split(size_t el_number, Node* node) {
     std::pair<Node*, Node*> result{nullptr, nullptr};
@@ -461,13 +503,21 @@ class ImplicitTreap {
       result.second->left = other;
       result.first = smaller;
     }
-    FixParent(result.first);
-    FixTreeSize(result.first);
-    FixParent(result.second);
-    FixTreeSize(result.second);
+    if (result.first) {
+      FixParent(result.first);
+      FixTreeSize(result.first);
+    }
+    if (result.second) {
+      FixParent(result.second);
+      FixTreeSize(result.second);
+    }
     return result;
   }
-
+  /**
+   * @brief Recursively destroys all elements in the treap.
+   *
+   * @param root - root of the given treap
+   */
   static void DeleteTree(Node* root) {
     if (!root) return;
     DeleteTree(root->left);
@@ -475,7 +525,12 @@ class ImplicitTreap {
     delete root;
   }
   /**
-   * @warning Method expects that curr_node is not null.
+   * @brief Gets the node which is the next after the given one in the treap
+   * traversing order. Complexity O(log n), in average amortized constant.
+   *
+   * @param curr_node - node relatively to which we are searching the next one.
+   * Cannot be nullptr.
+   * @return Node* pointer to the next node. Can be nullptr.
    */
   static Node* GetNextNode(const Node* curr_node) {
     assert(curr_node);
@@ -497,7 +552,13 @@ class ImplicitTreap {
     return right;
   }
   /**
-   * @warning Method expects that curr_node is not null.
+   * @brief Gets the node which is the previous relatively to the given one in
+   * the treap traversing order. Complexity O(log n), in average amortized
+   * constant.
+   *
+   * @param curr_node - node relatively to which we are searching the previous
+   * one. Cannot be nullptr.
+   * @return Node* pointer to the next node. Can be nullptr.
    */
   static Node* GetPrevNode(const Node* curr_node) {
     assert(curr_node);
@@ -546,11 +607,18 @@ class ImplicitTreap {
   }
   /**
    * @brief Gets the node with the given element number.
-   * Note that element number, unlike element index, starts from 1.
+   *
+   * Method expects that the element with the requested element number is
+   * available in the treap.
+   *
+   * @param root - root of the treap, where we are looking for the element.
+   * @param el_number - element number. Unlike element index, element number
+   * starts from 1.
+   * @return Node* pointer to the requested element. Never returns nullptr.
    */
   static Node* GetElement(Node* root, size_t el_number) {
     assert(el_number > 0);
-    if (!root) return nullptr;
+    assert(root);
     int curr_el_number = GetTreeSize(root->left) + 1;
     if (el_number < curr_el_number) {
       return GetElement(root->left, el_number);
