@@ -254,6 +254,48 @@ class ImplicitTreap {
     return *this;
   }
   /**
+   * @brief Constructs a new Implicit Treap object, which will contain all
+   * elements from the given vector. Complexity O(n).
+   *
+   * @param input element collection which will be copied to the treap. Can be
+   * empty.
+   * @param seed will set in radom generator which generates priorities.
+   */
+  ImplicitTreap(const std::vector<T>& input, uint64_t seed) : rnd_(seed) {
+    if (input.empty()) return;
+    size_ = input.size();
+    auto it = input.begin();
+    root_ = new Node(*it++, /*priority=*/rnd_());
+    Node* last_included = root_;
+    while (it != input.end()) {
+      Node* new_node = new Node(*it++, /*priority=*/rnd_());
+      while (last_included && last_included->priority < new_node->priority) {
+        last_included = last_included->parent;
+      }
+      if (!last_included) {
+        // New node has the largest priority
+        new_node->left = root_;
+        new_node->left->parent = new_node;
+        FixTreeSize(new_node);
+        root_ = new_node;
+      } else {
+        // Here last_include->priority >= new_node->priority
+        if (last_included->right) {
+          new_node->left = last_included->right;
+          new_node->left->parent = new_node;
+          FixTreeSize(new_node);
+        }
+        last_included->right = new_node;
+        last_included->right->parent = last_included;
+        while (last_included) {
+          FixTreeSize(last_included);
+          last_included = last_included->parent;
+        }
+      }
+      last_included = new_node;
+    }
+  }
+  /**
    * @brief Destroy the Implicit Treap object by destroying each value it
    * stored.
    */
@@ -480,8 +522,9 @@ class ImplicitTreap {
    * @param el_number - element number according to which treap is being
    * splitted. Note that element number, unlike element index, starts from 1.
    * @param node - root of the treap, which is being splitted.
-   * @return Roots of two treaps in which the original one was splitted. The
-   * resulting pair can contain nullptr.
+   * @return Roots of two treaps in which the original one was splitted. This
+   * is, parent of each root node is nullptr. The resulting pair can contain
+   * nullptr.
    */
   static std::pair<Node*, Node*> Split(size_t el_number, Node* node) {
     std::pair<Node*, Node*> result{nullptr, nullptr};
@@ -506,11 +549,14 @@ class ImplicitTreap {
     if (result.first) {
       FixParent(result.first);
       FixTreeSize(result.first);
+      result.first->parent = nullptr;
     }
     if (result.second) {
       FixParent(result.second);
       FixTreeSize(result.second);
+      result.second->parent = nullptr;
     }
+
     return result;
   }
   /**
