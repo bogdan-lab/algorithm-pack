@@ -21,7 +21,6 @@ class ImplicitTreap {
   /**
    * @brief Represents constant bidirectional iterator for the ImplicitTreap
    * structure.
-   * TODO what about iterator invalidation????
    */
   class ConstIterator {
    public:
@@ -113,7 +112,6 @@ class ImplicitTreap {
   };
   /**
    * @brief Represents bidirectional iterator for the ImplicitTreap structure.
-   * TODO what about iterator invalidation????
    */
   class Iterator {
    public:
@@ -225,7 +223,8 @@ class ImplicitTreap {
   /**
    * @brief Construct a new Implicit Treap object by moving data from other.
    *
-   * @param other - object from which data is moved from.
+   * @param other - object from which data is moved from. All iterators of this
+   * object become invalidated.
    */
   ImplicitTreap(ImplicitTreap&& other) {
     root_ = std::exchange(other.root_, nullptr);
@@ -241,7 +240,8 @@ class ImplicitTreap {
    * does not consider situations when two treaps share same nodes deeper in the
    * structure.
    *
-   * @param other - object from which data is moved from.
+   * @param other - object from which data is moved from. If moving from this
+   * object was performed, all its iterators become invalidated.
    * @return ImplicitTreap& reference to the new treap, which contains data from
    * other.
    */
@@ -273,7 +273,7 @@ class ImplicitTreap {
   size_t Size() const { return size_; }
   /**
    * @brief Inserts the given value into given position by copying it.
-   * Complexity O(log n)
+   * Complexity O(log n). Does not ivalidate iterators.
    *
    * @param value - actual value which needs to be placed into the treap.
    * @param pos - position where the new element should be inserted. If the
@@ -312,7 +312,8 @@ class ImplicitTreap {
   }
   /**
    * @brief Deletes the element from the container, which is stored in the given
-   * position. Complexity O(log n)
+   * position. Complexity O(log n). Invalidates only iterators which pointed to
+   * the deleted object.
    *
    * @param pos - position of the element to be deleted. Method expects that
    * given position is valid, this is its value is in range [0, treap_size).
@@ -334,6 +335,7 @@ class ImplicitTreap {
    * count = -1 results in [1, 2, 3, 4] -> [2, 3, 4, 1]
    * count = 0 - does nothing
    *
+   * Method does not invalidate any iterators.
    * Method should not be called on the empty treap
    * @param count - number of positions we need to rotate the container. We can
    * have absolute value larger than treap size. Complexity O(log n).
@@ -355,7 +357,6 @@ class ImplicitTreap {
   }
   /**
    * @brief Gets begin iterator of the container. Complexity O(log n).
-   * TODO Are iterators invalidated after insrtion/delition?
    */
   Iterator Begin() { return Iterator{FindFirstNode(root_), this}; }
   /**
@@ -374,7 +375,6 @@ class ImplicitTreap {
   }
   /**
    * @brief Gets past the end iterator of the container. Complexity constant.
-   * TODO Study interator invalidation
    */
   Iterator End() { return Iterator{nullptr, this}; }
   /**

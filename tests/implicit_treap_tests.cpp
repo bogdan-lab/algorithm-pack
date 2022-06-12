@@ -255,3 +255,90 @@ TEST(ImplicitTreapTest, RotateCountlargerThanSize) {
     EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
   }
 }
+
+TEST(ImplicitTreapTest, IteratorInvalidationInsert) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8};
+  alpa::ImplicitTreap<int> test;
+  std::vector<alpa::ImplicitTreap<int>::Iterator> iterators;
+  iterators.reserve(input.size());
+  std::vector<alpa::ImplicitTreap<int>::ConstIterator> const_iterators;
+  const_iterators.reserve(input.size());
+  auto end = test.End();
+  auto cend = test.CEnd();
+  for (size_t i = 0; i < input.size(); ++i) {
+    test.Insert(input[i], test.Size());
+    if (iterators.empty()) {
+      iterators.push_back(test.Begin());
+      const_iterators.push_back(test.CBegin());
+    } else {
+      auto prev = iterators.back();
+      iterators.push_back(++prev);
+      auto cprev = const_iterators.back();
+      const_iterators.push_back(++cprev);
+    }
+  }
+  for (size_t i = 0; i < input.size(); ++i) {
+    EXPECT_EQ(input[i], *iterators[i]);
+    EXPECT_EQ(input[i], *const_iterators[i]);
+  }
+  auto res_end = iterators.back();
+  auto cres_end = const_iterators.back();
+  EXPECT_EQ(++res_end, end);
+  EXPECT_EQ(++cres_end, end);
+}
+
+TEST(ImplicitTreapTest, IteratorInvalidationRotate) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+  {
+    alpa::ImplicitTreap<int> test = CreateTreap(input);
+    auto it = test.Begin();
+    auto cit = test.CBegin();
+    auto end = test.End();
+    auto cend = test.CEnd();
+    test.Rotate(2);
+    for (size_t i = 0; i < input.size() - 2; ++i) {
+      EXPECT_EQ(*it++, input[i]);
+      EXPECT_EQ(*cit++, input[i]);
+    }
+    EXPECT_EQ(it, end);
+    EXPECT_EQ(cit, cend);
+  }
+  {
+    alpa::ImplicitTreap<int> test = CreateTreap(input);
+    auto it = test.Begin();
+    auto cit = test.CBegin();
+    auto end = test.End();
+    auto cend = test.CEnd();
+    test.Rotate(-2);
+    for (size_t i = 0; i < 2; ++i) {
+      EXPECT_EQ(*it++, input[i]);
+      EXPECT_EQ(*cit++, input[i]);
+    }
+    EXPECT_EQ(it, end);
+    EXPECT_EQ(cit, cend);
+  }
+}
+
+TEST(ImplicitTreapTest, IteratorInvalidationErase) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8};
+  alpa::ImplicitTreap<int> test = CreateTreap(input);
+  auto it = test.Begin();
+  auto cit = test.CBegin();
+  auto end = test.End();
+  auto cend = test.CEnd();
+  size_t count = 0;
+  for (size_t i = 0; i < input.size(); ++i) {
+    if (!(input[i] % 2)) {
+      test.Erase(i - count);
+      ++count;
+    }
+  }
+  for (size_t i = 0; i < input.size(); ++i) {
+    if (input[i] % 2) {
+      EXPECT_EQ(*it++, input[i]);
+      EXPECT_EQ(*cit++, input[i]);
+    }
+  }
+  EXPECT_EQ(it, end);
+  EXPECT_EQ(cit, cend);
+}
