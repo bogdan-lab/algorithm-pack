@@ -353,3 +353,18 @@ TEST(ImplicitTreapTest, ConstructFromVector) {
     EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
   }
 }
+
+TEST(ImplicitTreapTest, IteratorCall) {
+  std::vector<std::string> input{"one", "two", "three"};
+  alpa::ImplicitTreap<std::string> test(input, /*seed=*/123);
+  auto it = test.Begin();
+  auto cit = test.CBegin();
+  auto exp_it = input.begin();
+  while (exp_it != input.end()) {
+    EXPECT_EQ(it->find("e"), exp_it->find("e"));
+    EXPECT_EQ(cit->find("e"), exp_it->find("e"));
+    ++it;
+    ++cit;
+    ++exp_it;
+  }
+}

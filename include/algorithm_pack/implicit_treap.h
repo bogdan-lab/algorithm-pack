@@ -95,6 +95,12 @@ class ImplicitTreap {
      * @return const T& reference to the value stored in the given position.
      */
     const T& operator*() const { return curr_node_->value; }
+    /**
+     * @brief Provides constant access to the value pointed by iterator.
+     *
+     * @return const T* pointer to the value at which iterator currently points.
+     */
+    const T* operator->() const { return &curr_node_->value; }
 
    private:
     /**
@@ -193,6 +199,12 @@ class ImplicitTreap {
      * @return T& reference to the value stored in the given position.
      */
     T& operator*() { return curr_node_->value; }
+    /**
+     * @brief Provides access to the value pointed by iterator.
+     *
+     * @return T* pointer to the value at which iterator currently points.
+     */
+    T* operator->() const { return &curr_node_->value; }
 
    private:
     /**
