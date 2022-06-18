@@ -368,3 +368,60 @@ TEST(ImplicitTreapTest, IteratorCall) {
     ++exp_it;
   }
 }
+
+TEST(ImplicitTreapTest, Concatenate1) {
+  {  // General case
+    std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    auto mid_it = input.begin() + input.size() / 2;
+    alpa::ImplicitTreap<int> lhs{{input.begin(), mid_it},
+                                 /*seed=*/42};
+    alpa::ImplicitTreap<int> rhs{{mid_it, input.end()},
+                                 /*seed=*/123};
+    lhs.Concatenate(std::move(rhs));
+    EXPECT_EQ(lhs.Size(), input.size());
+    EXPECT_THAT(lhs.ConvertToVector(), ElementsAreArray(input));
+  }
+  {  // Concatenate empty
+    std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    alpa::ImplicitTreap<int> lhs{input, /*seed=*/42};
+    alpa::ImplicitTreap<int> rhs;
+    lhs.Concatenate(std::move(rhs));
+    EXPECT_EQ(lhs.Size(), input.size());
+    EXPECT_THAT(lhs.ConvertToVector(), ElementsAreArray(input));
+  }
+  {  // Concatenate to empty
+    std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    alpa::ImplicitTreap<int> lhs;
+    alpa::ImplicitTreap<int> rhs{input, /*seed=*/42};
+    lhs.Concatenate(std::move(rhs));
+    EXPECT_EQ(lhs.Size(), input.size());
+    EXPECT_THAT(lhs.ConvertToVector(), ElementsAreArray(input));
+  }
+}
+
+TEST(ImplicitTreapTest, Concatenate2) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+  alpa::ImplicitTreap<int> test;
+  test.Insert(0, /*pos=*/0);
+  auto it = test.Begin();
+  auto cit = test.CBegin();
+  auto end = test.End();
+  auto cend = test.CEnd();
+  int prev_val = 0;
+  for (size_t i = 0; i < input.size(); ++i) {
+    test.Concatenate(alpa::ImplicitTreap<int>({input[i]}, /*seed=*/314));
+    ++it;
+    ++cit;
+    EXPECT_EQ(*it, input[i]);
+    EXPECT_EQ(*cit, input[i]);
+    --it;
+    --cit;
+    EXPECT_EQ(*it, prev_val);
+    EXPECT_EQ(*cit, prev_val);
+    ++it;
+    ++cit;
+    prev_val = input[i];
+  }
+  EXPECT_EQ(test.End(), end);
+  EXPECT_EQ(test.CEnd(), cend);
+}

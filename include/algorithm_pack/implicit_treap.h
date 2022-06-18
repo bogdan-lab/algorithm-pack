@@ -344,6 +344,19 @@ class ImplicitTreap {
     return new_node->value;
   }
   /**
+   * @brief Concatenates the given treap to the end of the current one.
+   * Complexity O(log n). Does not invalidate iterators.
+   *
+   * @param other given treap which will be concatenated. Ownership of all
+   * elements from the given treap will be moved to this treap.
+   * @return ImplicitTreap<T>& reference to the concatenated treap
+   */
+  ImplicitTreap<T>& Concatenate(ImplicitTreap&& other) {
+    root_ = Merge(root_, std::exchange(other.root_, nullptr));
+    size_ += std::exchange(other.size_, 0);
+    return *this;
+  }
+  /**
    * @brief Returns reference to the element stored in the given position.
    * Complexity O(log n)
    *
