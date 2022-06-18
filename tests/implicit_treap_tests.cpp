@@ -425,3 +425,50 @@ TEST(ImplicitTreapTest, Concatenate2) {
   EXPECT_EQ(test.End(), end);
   EXPECT_EQ(test.CEnd(), cend);
 }
+
+TEST(ImplicitTreapTest, RandomAccessIteratorShifts) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8};
+  alpa::ImplicitTreap<int> test(input, /*seed=*/15);
+  {
+    auto it = test.Begin();
+    auto cit = test.CBegin();
+    EXPECT_EQ(*(it + 1), input[1]);
+    EXPECT_EQ(*(cit + 1), input[1]);
+    EXPECT_EQ(*(it + 0), input[0]);
+    EXPECT_EQ(*(cit + 0), input[0]);
+    EXPECT_EQ(*(it + 3), input[3]);
+    EXPECT_EQ(*(cit + 3), input[3]);
+    EXPECT_EQ(*(it + (input.size() - 1)), input.back());
+    EXPECT_EQ(*(cit + (input.size() - 1)), input.back());
+    EXPECT_EQ((it + input.size()), test.End());
+    EXPECT_EQ((cit + input.size()), test.CEnd());
+  }
+  {
+    auto it = test.End();
+    auto cit = test.CEnd();
+    EXPECT_EQ(*(it - 1), input.back());
+    EXPECT_EQ(*(cit - 1), input.back());
+    EXPECT_EQ(*(it - 3), input[5]);
+    EXPECT_EQ(*(cit - 3), input[5]);
+    EXPECT_EQ(*(it - (input.size() - 1)), input[1]);
+    EXPECT_EQ(*(cit - (input.size() - 1)), input[1]);
+    EXPECT_EQ(*(it - input.size()), input.front());
+    EXPECT_EQ(*(cit - input.size()), input.front());
+  }
+  {
+    auto it = test.Begin() + 3;
+    auto cit = test.CBegin() + 3;
+    EXPECT_EQ(*(it - 0), input[3]);
+    EXPECT_EQ(*(cit - 0), input[3]);
+    EXPECT_EQ(*(it + 0), input[3]);
+    EXPECT_EQ(*(cit + 0), input[3]);
+    EXPECT_EQ(*(it - 1), input[2]);
+    EXPECT_EQ(*(cit - 1), input[2]);
+    EXPECT_EQ(*(it + 1), input[4]);
+    EXPECT_EQ(*(cit + 1), input[4]);
+    EXPECT_EQ(*(it - 3), input[0]);
+    EXPECT_EQ(*(cit - 3), input[0]);
+    EXPECT_EQ(*(it + 3), input[6]);
+    EXPECT_EQ(*(cit + 3), input[6]);
+  }
+}

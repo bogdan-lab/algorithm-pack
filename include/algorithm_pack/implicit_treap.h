@@ -19,7 +19,7 @@ class ImplicitTreap {
 
  public:
   /**
-   * @brief Represents constant bidirectional iterator for the ImplicitTreap
+   * @brief Represents constant random access iterator for the ImplicitTreap
    * structure.
    */
   class ConstIterator {
@@ -89,6 +89,36 @@ class ImplicitTreap {
       return ConstIterator{old_node, host_};
     }
     /**
+     * @brief Shifts iterator in the random access manner to the right.
+     * Complexity O(log n).
+     *
+     * @param shift number of position on which iterator has to be shifted. If
+     * negative iterator will be shifted to the left. The shift value should be
+     * correct, this is after shifting iterator should remain in the range
+     * [begin, end).
+     * @return ConstIterator new shifted iterator.
+     */
+    ConstIterator operator+(int shift) const {
+      assert(host_);
+      if (!curr_node_) {
+        // We are trying to shift from end() iterator
+        return ConstIterator(GetElement(host_->root_, host_->size_ + shift + 1),
+                             host_);
+      }
+      return ConstIterator(ShiftNode(curr_node_, host_->root_, shift), host_);
+    }
+    /**
+     * @brief Shifts iterator in the random access manner to the left.
+     * Complexity O(log n).
+     *
+     * @param shift number of position on which iterator has to be shifted. If
+     * negative iterator will be shifted to the right. The shift value should be
+     * correct, this is after shifting iterator should remain in the range
+     * [begin, end).
+     * @return ConstIterator new shifted iterator.
+     */
+    ConstIterator operator-(int shift) const { return *this + (-shift); }
+    /**
      * @brief Dereferences this iterator. Should be called only on valid
      * iterator.
      *
@@ -117,7 +147,7 @@ class ImplicitTreap {
     const ImplicitTreap* host_ = nullptr;
   };
   /**
-   * @brief Represents bidirectional iterator for the ImplicitTreap structure.
+   * @brief Represents random access iterator for the ImplicitTreap structure.
    */
   class Iterator {
    public:
@@ -193,6 +223,36 @@ class ImplicitTreap {
       return Iterator{old_node, host_};
     }
     /**
+     * @brief Shifts iterator in the random access manner to the right.
+     * Complexity O(log n).
+     *
+     * @param shift number of position on which iterator has to be shifted. If
+     * negative iterator will be shifted to the left. The shift value should be
+     * correct, this is after shifting iterator should remain in the range
+     * [begin, end).
+     * @return Iterator new shifted iterator.
+     */
+    Iterator operator+(int shift) const {
+      assert(host_);
+      if (!curr_node_) {
+        // We are trying to shift from end() iterator
+        return Iterator(GetElement(host_->root_, host_->size_ + shift + 1),
+                        host_);
+      }
+      return Iterator(ShiftNode(curr_node_, host_->root_, shift), host_);
+    }
+    /**
+     * @brief Shifts iterator in the random access manner to the left.
+     * Complexity O(log n).
+     *
+     * @param shift number of position on which iterator has to be shifted. If
+     * negative iterator will be shifted to the right. The shift value should be
+     * correct, this is after shifting iterator should remain in the range
+     * [begin, end).
+     * @return Iterator new shifted iterator.
+     */
+    Iterator operator-(int shift) const { return *this + (-shift); }
+    /**
      * @brief Dereferences this iterator. Should be called only on valid
      * iterator.
      *
@@ -220,7 +280,6 @@ class ImplicitTreap {
     Node* curr_node_ = nullptr;
     ImplicitTreap* host_ = nullptr;
   };
-
   /**
    * @brief Creates an empty treap.
    */
@@ -489,7 +548,9 @@ class ImplicitTreap {
    * @param node - root of the tree which is processed. Can be nullptr.
    * @return size_t number of elements in the given tree.
    */
-  static size_t GetTreeSize(Node* node) { return node ? node->tree_size : 0; }
+  static size_t GetTreeSize(const Node* node) {
+    return node ? node->tree_size : 0;
+  }
   /**
    * @brief Sets size of the given node according to its children
    * @param node - node needed to be fixed. Cannot be nullptr.
@@ -698,6 +759,45 @@ class ImplicitTreap {
     } else {
       return root;
     }
+  }
+  /**
+   * @brief Shifts current node to another valid node in the tree.
+   * If shift value is not valid, this is, it results in shifting out of the
+   * array bounds, nullptr will be returned.
+   *
+   * @param curr_node current node from which shift is calculated
+   * @param root root of the tree inside which the shift is performed
+   * @param shift number of elements on which we need to shift. Can be negative.
+   * @return Node* shifted node or nullptr in case of incorrect input.
+   */
+  static Node* ShiftNode(const Node* curr_node, const Node* root, int shift) {
+    size_t curr_number = GetElementNumber(curr_node);
+    if (curr_number + shift < 1 || curr_number + shift > root->tree_size) {
+      return nullptr;
+    }
+    return GetElement(const_cast<Node*>(root), curr_number + shift);
+  }
+  /**
+   * @brief Calculates the element number which corresponds to the given node.
+   * Complexity O(log n).
+   *
+   *
+   * @param node element node of the interest. Cannot be nullptr.
+   * @return size_t element number which corresponds to the given node. Note
+   * that unlike the index element number numeration start from 1.
+   */
+  static size_t GetElementNumber(const Node* node) {
+    assert(node);
+    size_t curr_num = GetTreeSize(node->left) + 1;
+    const Node* parent = node->parent;
+    while (parent) {
+      if (parent->right == node) {
+        curr_num += GetTreeSize(parent->left) + 1;
+      }
+      node = parent;
+      parent = parent->parent;
+    }
+    return curr_num;
   }
 
   Node* root_ = nullptr;
