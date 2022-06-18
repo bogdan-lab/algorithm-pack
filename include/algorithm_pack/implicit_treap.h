@@ -99,7 +99,12 @@ class ImplicitTreap {
      * @return ConstIterator new shifted iterator.
      */
     ConstIterator operator+(int shift) const {
-      assert(curr_node_ && host_);
+      assert(host_);
+      if (!curr_node_) {
+        // We are trying to shift from end() iterator
+        return ConstIterator(GetElement(host_->root_, host_->size_ + shift + 1),
+                             host_);
+      }
       return ConstIterator(ShiftNode(curr_node_, host_->root_, shift), host_);
     }
     /**
@@ -222,7 +227,12 @@ class ImplicitTreap {
      * @return Iterator new shifted iterator.
      */
     Iterator operator+(int shift) const {
-      assert(curr_node_ && host_);
+      assert(host_);
+      if (!curr_node_) {
+        // We are trying to shift from end() iterator
+        return Iterator(GetElement(host_->root_, host_->size_ + shift + 1),
+                        host_);
+      }
       return Iterator(ShiftNode(curr_node_, host_->root_, shift), host_);
     }
     /**
@@ -513,7 +523,9 @@ class ImplicitTreap {
    * @param node - root of the tree which is processed. Can be nullptr.
    * @return size_t number of elements in the given tree.
    */
-  static size_t GetTreeSize(Node* node) { return node ? node->tree_size : 0; }
+  static size_t GetTreeSize(const Node* node) {
+    return node ? node->tree_size : 0;
+  }
   /**
    * @brief Sets size of the given node according to its children
    * @param node - node needed to be fixed. Cannot be nullptr.
@@ -723,15 +735,25 @@ class ImplicitTreap {
       return root;
     }
   }
-
+  /**
+   * @brief Shifts current node to another valid node in the tree.
+   * If shift value is not valid, this is, it results in shifting out of the
+   * array bounds, nullptr will be returned.
+   *
+   * @param curr_node current node from which shift is calculated
+   * @param root root of the tree inside which the shift is performed
+   * @param shift number of elements on which we need to shift. Can be negative.
+   * @return Node* shifted node or nullptr in case of incorrect input.
+   */
   static Node* ShiftNode(const Node* curr_node, const Node* root, int shift) {
     size_t curr_number = GetElementNumber(curr_node);
-    assert(shift < 0 ? -shift < curr_number
-                     : shift + curr_number <= root->tree_size);
-    return GetElement(root, curr_number + shift);
+    if (curr_number + shift < 1 || curr_number + shift > root->tree_size) {
+      return nullptr;
+    }
+    return GetElement(const_cast<Node*>(root), curr_number + shift);
   }
   /**
-   * @brief Calculates the element number which cirresponds to the given node.
+   * @brief Calculates the element number which corresponds to the given node.
    * Complexity O(log n).
    *
    *
