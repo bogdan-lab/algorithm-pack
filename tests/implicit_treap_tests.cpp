@@ -426,7 +426,7 @@ TEST(ImplicitTreapTest, Concatenate2) {
   EXPECT_EQ(test.CEnd(), cend);
 }
 
-TEST(ImplicitTreapTest, RandomAccessIteratorShifts) {
+TEST(ImplicitTreapTest, RandomAccessIteratorShifts1) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8};
   alpa::ImplicitTreap<int> test(input, /*seed=*/15);
   {
@@ -470,5 +470,27 @@ TEST(ImplicitTreapTest, RandomAccessIteratorShifts) {
     EXPECT_EQ(*(cit - 3), input[0]);
     EXPECT_EQ(*(it + 3), input[6]);
     EXPECT_EQ(*(cit + 3), input[6]);
+  }
+}
+
+TEST(ImplicitTreapTest, RandomAccessIteratorShifts2) {
+  // test jump from different points in the tree to some other different points
+  // in the tree
+  std::vector<int> input(10000);
+  std::iota(input.begin(), input.end(), 0);
+  alpa::ImplicitTreap<int> test(input, /*seed=*/56);
+  std::mt19937 rnd(42);
+  std::uniform_int_distribution<int> dist(0, input.size() - 1);
+  int count = 500;
+  auto it = test.Begin();
+  auto cit = test.CBegin();
+  while (count--) {
+    int index_from = dist(rnd);
+    int index_to = dist(rnd);
+    int shift = index_to - index_from;
+    EXPECT_EQ(*((it + index_from) + shift), input[index_to])
+        << "from " << index_from << " to " << index_to;
+    EXPECT_EQ(*((cit + index_from) + shift), input[index_to])
+        << "from " << index_from << " to " << index_to;
   }
 }
