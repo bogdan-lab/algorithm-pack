@@ -494,3 +494,101 @@ TEST(ImplicitTreapTest, RandomAccessIteratorShifts2) {
         << "from " << index_from << " to " << index_to;
   }
 }
+
+TEST(ImplicitTreapTest, Extract1) {
+  {  // Extract entire range
+    std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    alpa::ImplicitTreap<int> test(input, /*seed=*/519);
+    alpa::ImplicitTreap<int> res = test.Extract(0, test.Size());
+    EXPECT_EQ(test.Size(), 0);
+    EXPECT_TRUE(test.Empty());
+    EXPECT_EQ(res.Size(), input.size());
+    EXPECT_FALSE(res.Empty());
+    EXPECT_THAT(res.ConvertToVector(), ElementsAreArray(input));
+  }
+  {  // Extract empty range
+    std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    alpa::ImplicitTreap<int> test(input, /*seed=*/519);
+    alpa::ImplicitTreap<int> res = test.Extract(5, 5);
+    EXPECT_EQ(res.Size(), 0);
+    EXPECT_TRUE(res.Empty());
+    EXPECT_EQ(test.Size(), input.size());
+    EXPECT_FALSE(test.Empty());
+    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+  }
+  {  // Extract single element
+    std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    alpa::ImplicitTreap<int> test(input, /*seed=*/519);
+    alpa::ImplicitTreap<int> res = test.Extract(5, 6);
+    EXPECT_EQ(res.Size(), 1);
+    EXPECT_FALSE(res.Empty());
+    EXPECT_EQ(test.Size(), input.size() - 1);
+    EXPECT_FALSE(test.Empty());
+    EXPECT_THAT(res.ConvertToVector(), ElementsAre(6));
+    EXPECT_THAT(test.ConvertToVector(), ElementsAre(1, 2, 3, 4, 5, 7, 8, 9));
+  }
+  {  // Extract empty from the empty
+    alpa::ImplicitTreap<int> test(/*seed=*/519);
+    alpa::ImplicitTreap<int> res = test.Extract(0, 0);
+    EXPECT_EQ(test.Size(), 0);
+    EXPECT_TRUE(test.Empty());
+    EXPECT_EQ(res.Size(), 0);
+    EXPECT_TRUE(res.Empty());
+  }
+  {  // Extract from the beginning
+    std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    alpa::ImplicitTreap<int> test(input, /*seed=*/519);
+    alpa::ImplicitTreap<int> start = test.Extract(0, 4);
+    EXPECT_EQ(start.Size(), 4);
+    EXPECT_EQ(test.Size(), input.size() - 4);
+    EXPECT_THAT(start.ConvertToVector(),
+                ElementsAreArray(input.begin(), input.begin() + 4));
+    EXPECT_THAT(test.ConvertToVector(),
+                ElementsAreArray(input.begin() + 4, input.end()));
+  }
+  {  // Extract from the end
+    std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    alpa::ImplicitTreap<int> test(input, /*seed=*/519);
+    alpa::ImplicitTreap<int> end = test.Extract(6, input.size());
+    EXPECT_EQ(end.Size(), input.size() - 6);
+    EXPECT_FALSE(end.Empty());
+    EXPECT_EQ(test.Size(), 6);
+    EXPECT_FALSE(test.Empty());
+    EXPECT_THAT(test.ConvertToVector(),
+                ElementsAreArray(input.begin(), input.begin() + 6));
+    EXPECT_THAT(end.ConvertToVector(),
+                ElementsAreArray(input.begin() + 6, input.end()));
+  }
+  {  // Extract from the middle
+    std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    alpa::ImplicitTreap<int> test(input, /*seed=*/519);
+    alpa::ImplicitTreap<int> middle = test.Extract(4, 7);
+    EXPECT_EQ(middle.Size(), 3);
+    EXPECT_FALSE(middle.Empty());
+    EXPECT_EQ(test.Size(), input.size() - 3);
+    EXPECT_FALSE(test.Empty());
+    EXPECT_THAT(middle.ConvertToVector(),
+                ElementsAreArray(input.begin() + 4, input.begin() + 7));
+    std::vector<int> reminder(input.begin(), input.begin() + 4);
+    reminder.insert(reminder.end(), input.begin() + 7, input.end());
+    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(reminder));
+  }
+}
+
+TEST(ImplicitTreapTest, Extract2) {
+  // testing iterator invalidation
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+  std::vector<int> expected{1, 2, 3, 4, 8, 9};
+  alpa::ImplicitTreap<int> test(input, /*seed=*/57);
+  auto it = test.Begin();
+  auto cit = test.CBegin();
+  auto end = test.End();
+  auto cend = test.CEnd();
+  alpa::ImplicitTreap<int> extracted = test.Extract(4, 7);
+  for (const auto& el : expected) {
+    EXPECT_EQ(*it++, el);
+    EXPECT_EQ(*cit++, el);
+  }
+  EXPECT_EQ(it, end);
+  EXPECT_EQ(cit, cend);
+}

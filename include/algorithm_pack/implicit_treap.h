@@ -453,6 +453,38 @@ class ImplicitTreap {
     --size_;
   }
   /**
+   * @brief Extracts from the treap elements in the interval [start_pos,
+   * end_pos).
+   *
+   * Element position numerationt starts from 0. The given range should
+   * be valid, this is end_pos >= start_pos and end_pos <= treap size.
+   * Complexity O(log n). Does not invalidate iterators.
+   *
+   * @param start_pos index of the first element which will be extracted.
+   * @param end_pos index pass the last element in the extracting range.
+   * @return ImplicitTreap treap which contains all extracted elements in the
+   * preservedd order.
+   */
+  ImplicitTreap Extract(size_t start_pos, size_t end_pos) {
+    assert(end_pos >= start_pos);
+    assert(end_pos <= size_);
+    ImplicitTreap result(/*seed=*/rnd_());
+    if (start_pos == 0 && end_pos == size_) {
+      result.root_ = std::exchange(root_, nullptr);
+      result.size_ = std::exchange(size_, 0);
+    } else if (start_pos < end_pos) {
+      std::pair<Node*, Node*> start_split = Split(start_pos + 1, root_);
+      size_t extracted_num = end_pos - start_pos;
+      std::pair<Node*, Node*> end_split =
+          Split(extracted_num + 1, start_split.second);
+      result.root_ = end_split.first;
+      result.size_ = extracted_num;
+      root_ = Merge(start_split.first, end_split.second);
+      size_ -= extracted_num;
+    }
+    return result;
+  }
+  /**
    * @brief Performs cyclic rotation of the container on the given position
    * number to the right.
    *
