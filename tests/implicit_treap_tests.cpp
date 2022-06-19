@@ -41,7 +41,8 @@ TEST(ImplicitTreapTest, PushBack) {
   }
   EXPECT_FALSE(test.Empty());
   EXPECT_EQ(test.Size(), input.size());
-  EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+  EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+              ElementsAreArray(input));
 }
 
 TEST(ImplicitTreapTest, PushFront) {
@@ -52,7 +53,7 @@ TEST(ImplicitTreapTest, PushFront) {
   }
   EXPECT_FALSE(test.Empty());
   EXPECT_EQ(test.Size(), input.size());
-  EXPECT_THAT(test.ConvertToVector(),
+  EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
               ElementsAreArray(input.rbegin(), input.rend()));
 }
 
@@ -61,7 +62,7 @@ TEST(ImplicitTreapTest, InsertInside) {
   for (size_t i = 1; i < input.size(); ++i) {
     alpa::ImplicitTreap<int> test(input, /*seed=*/15);
     test.Insert(1024, i);
-    std::vector<int> res = test.ConvertToVector();
+    std::vector<int> res(test.Begin(), test.End());
     ASSERT_GT(res.size(), i);
     EXPECT_EQ(res[i], 1024) << " i = " << i;
   }
@@ -127,7 +128,8 @@ TEST(ImplicitTreapTest, Constructors2) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
   alpa::ImplicitTreap<int> x(input, /*seed=*/15);
   alpa::ImplicitTreap<int> test(std::move(x));
-  EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+  EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+              ElementsAreArray(input));
 }
 
 TEST(ImplicitTreapTest, Constructors3) {
@@ -135,7 +137,8 @@ TEST(ImplicitTreapTest, Constructors3) {
   alpa::ImplicitTreap<int> x(input, /*seed=*/15);
   alpa::ImplicitTreap<int> test(std::vector<int>{10, 20}, /*seed=*/15);
   test = std::move(x);
-  EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+  EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+              ElementsAreArray(input));
 }
 
 TEST(ImplicitTreapTest, ElementAccess1) {
@@ -158,7 +161,8 @@ TEST(ImplicitTreapTest, ElementAccess2) {
       input[i] = special_val;
     }
   }
-  EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+  EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+              ElementsAreArray(input));
 }
 
 TEST(ImplicitTreapTest, EraseFromBack) {
@@ -167,7 +171,8 @@ TEST(ImplicitTreapTest, EraseFromBack) {
   while (!input.empty()) {
     test.Erase(input.size() - 1);
     input.pop_back();
-    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAreArray(input));
   }
   EXPECT_TRUE(test.Empty());
 }
@@ -178,7 +183,8 @@ TEST(ImplicitTreapTest, EraseFromFront) {
   while (!input.empty()) {
     test.Erase(0);
     input.erase(input.begin());
-    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAreArray(input));
   }
   EXPECT_TRUE(test.Empty());
 }
@@ -190,7 +196,8 @@ TEST(ImplicitTreapTest, EraseFromTheMiddle) {
     size_t index = input.size() / 2;
     test.Erase(index);
     input.erase(input.begin() + index);
-    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAreArray(input));
   }
   EXPECT_TRUE(test.Empty());
 }
@@ -201,7 +208,8 @@ TEST(ImplicitTreapTest, RotatePositiveDirection) {
   for (int i = 1; i < input.size(); ++i) {
     test.Rotate(i);
     std::rotate(input.begin(), input.end() - i, input.end());
-    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAreArray(input));
   }
 }
 
@@ -211,7 +219,8 @@ TEST(ImplicitTreapTest, RotateNegativeDirection) {
   for (int i = 1; i < input.size(); ++i) {
     test.Rotate(-i);
     std::rotate(input.begin(), input.begin() + i, input.end());
-    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAreArray(input));
   }
 }
 
@@ -220,27 +229,32 @@ TEST(ImplicitTreapTest, RotateCountlargerThanSize) {
   {
     alpa::ImplicitTreap<int> test(input, /*seed=*/15);
     test.Rotate(5);
-    EXPECT_THAT(test.ConvertToVector(), ElementsAre(4, 1, 2, 3));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAre(4, 1, 2, 3));
   }
   {
     alpa::ImplicitTreap<int> test(input, /*seed=*/15);
     test.Rotate(7);
-    EXPECT_THAT(test.ConvertToVector(), ElementsAre(2, 3, 4, 1));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAre(2, 3, 4, 1));
   }
   {
     alpa::ImplicitTreap<int> test(input, /*seed=*/15);
     test.Rotate(-5);
-    EXPECT_THAT(test.ConvertToVector(), ElementsAre(2, 3, 4, 1));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAre(2, 3, 4, 1));
   }
   {
     alpa::ImplicitTreap<int> test(input, /*seed=*/15);
     test.Rotate(-7);
-    EXPECT_THAT(test.ConvertToVector(), ElementsAre(4, 1, 2, 3));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAre(4, 1, 2, 3));
   }
   {
     alpa::ImplicitTreap<int> test(input, /*seed=*/15);
     test.Rotate(0);
-    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAreArray(input));
   }
 }
 
@@ -337,7 +351,8 @@ TEST(ImplicitTreapTest, ConstructFromVector) {
     alpa::ImplicitTreap<int> test(input, /*seed=*/15);
     EXPECT_FALSE(test.Empty());
     EXPECT_EQ(test.Size(), input.size());
-    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAreArray(input));
   }
   {
     std::vector<int> input{};
@@ -350,7 +365,8 @@ TEST(ImplicitTreapTest, ConstructFromVector) {
     alpa::ImplicitTreap<int> test(input, /*seed=*/42);
     EXPECT_FALSE(test.Empty());
     EXPECT_EQ(test.Size(), 1);
-    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAreArray(input));
   }
 }
 
@@ -379,7 +395,8 @@ TEST(ImplicitTreapTest, Concatenate1) {
                                  /*seed=*/123};
     lhs.Concatenate(std::move(rhs));
     EXPECT_EQ(lhs.Size(), input.size());
-    EXPECT_THAT(lhs.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(lhs.Begin(), lhs.End()),
+                ElementsAreArray(input));
   }
   {  // Concatenate empty
     std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -387,7 +404,8 @@ TEST(ImplicitTreapTest, Concatenate1) {
     alpa::ImplicitTreap<int> rhs;
     lhs.Concatenate(std::move(rhs));
     EXPECT_EQ(lhs.Size(), input.size());
-    EXPECT_THAT(lhs.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(lhs.Begin(), lhs.End()),
+                ElementsAreArray(input));
   }
   {  // Concatenate to empty
     std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -395,7 +413,8 @@ TEST(ImplicitTreapTest, Concatenate1) {
     alpa::ImplicitTreap<int> rhs{input, /*seed=*/42};
     lhs.Concatenate(std::move(rhs));
     EXPECT_EQ(lhs.Size(), input.size());
-    EXPECT_THAT(lhs.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(lhs.Begin(), lhs.End()),
+                ElementsAreArray(input));
   }
 }
 
@@ -540,7 +559,8 @@ TEST(ImplicitTreapTest, Extract1) {
     EXPECT_TRUE(test.Empty());
     EXPECT_EQ(res.Size(), input.size());
     EXPECT_FALSE(res.Empty());
-    EXPECT_THAT(res.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(res.Begin(), res.End()),
+                ElementsAreArray(input));
   }
   {  // Extract empty range
     std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -550,7 +570,8 @@ TEST(ImplicitTreapTest, Extract1) {
     EXPECT_TRUE(res.Empty());
     EXPECT_EQ(test.Size(), input.size());
     EXPECT_FALSE(test.Empty());
-    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(input));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAreArray(input));
   }
   {  // Extract single element
     std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -560,8 +581,9 @@ TEST(ImplicitTreapTest, Extract1) {
     EXPECT_FALSE(res.Empty());
     EXPECT_EQ(test.Size(), input.size() - 1);
     EXPECT_FALSE(test.Empty());
-    EXPECT_THAT(res.ConvertToVector(), ElementsAre(6));
-    EXPECT_THAT(test.ConvertToVector(), ElementsAre(1, 2, 3, 4, 5, 7, 8, 9));
+    EXPECT_THAT(std::vector<int>(res.Begin(), res.End()), ElementsAre(6));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAre(1, 2, 3, 4, 5, 7, 8, 9));
   }
   {  // Extract empty from the empty
     alpa::ImplicitTreap<int> test(/*seed=*/519);
@@ -577,9 +599,9 @@ TEST(ImplicitTreapTest, Extract1) {
     alpa::ImplicitTreap<int> start = test.Extract(0, 4);
     EXPECT_EQ(start.Size(), 4);
     EXPECT_EQ(test.Size(), input.size() - 4);
-    EXPECT_THAT(start.ConvertToVector(),
+    EXPECT_THAT(std::vector<int>(start.Begin(), start.End()),
                 ElementsAreArray(input.begin(), input.begin() + 4));
-    EXPECT_THAT(test.ConvertToVector(),
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
                 ElementsAreArray(input.begin() + 4, input.end()));
   }
   {  // Extract from the end
@@ -590,9 +612,9 @@ TEST(ImplicitTreapTest, Extract1) {
     EXPECT_FALSE(end.Empty());
     EXPECT_EQ(test.Size(), 6);
     EXPECT_FALSE(test.Empty());
-    EXPECT_THAT(test.ConvertToVector(),
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
                 ElementsAreArray(input.begin(), input.begin() + 6));
-    EXPECT_THAT(end.ConvertToVector(),
+    EXPECT_THAT(std::vector<int>(end.Begin(), end.End()),
                 ElementsAreArray(input.begin() + 6, input.end()));
   }
   {  // Extract from the middle
@@ -603,11 +625,12 @@ TEST(ImplicitTreapTest, Extract1) {
     EXPECT_FALSE(middle.Empty());
     EXPECT_EQ(test.Size(), input.size() - 3);
     EXPECT_FALSE(test.Empty());
-    EXPECT_THAT(middle.ConvertToVector(),
+    EXPECT_THAT(std::vector<int>(middle.Begin(), middle.End()),
                 ElementsAreArray(input.begin() + 4, input.begin() + 7));
     std::vector<int> reminder(input.begin(), input.begin() + 4);
     reminder.insert(reminder.end(), input.begin() + 7, input.end());
-    EXPECT_THAT(test.ConvertToVector(), ElementsAreArray(reminder));
+    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+                ElementsAreArray(reminder));
   }
 }
 
@@ -627,4 +650,21 @@ TEST(ImplicitTreapTest, Extract2) {
   }
   EXPECT_EQ(it, end);
   EXPECT_EQ(cit, cend);
+}
+
+TEST(ImplicitTreapTest, StlMethodCalls) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+  alpa::ImplicitTreap<int> test(input, /*seed=*/45);
+  std::vector<int> result(test.Begin(), test.End());
+  EXPECT_THAT(result, ElementsAreArray(input));
+  std::vector<int> cresult(test.CBegin(), test.CEnd());
+  EXPECT_THAT(cresult, ElementsAreArray(input));
+  auto cit = std::lower_bound(test.CBegin(), test.CEnd(), 6);
+  auto it = std::lower_bound(test.Begin(), test.End(), 6);
+  ASSERT_NE(cit, test.CEnd());
+  ASSERT_NE(it, test.End());
+  EXPECT_EQ(*cit, 6);
+  EXPECT_EQ(*std::next(cit), 7);
+  EXPECT_EQ(*it, 6);
+  EXPECT_EQ(*std::prev(it), 5);
 }

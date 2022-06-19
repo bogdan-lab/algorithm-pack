@@ -2,6 +2,7 @@
 #define INCLUDE_ALGORITHM_PACK_IMPLICIT_TREAP_H
 
 #include <cassert>
+#include <iterator>
 #include <random>
 #include <utility>
 
@@ -25,6 +26,13 @@ class ImplicitTreap {
   class ConstIterator {
    public:
     friend class ImplicitTreap;
+
+    using iterator_category = std::random_access_iterator_tag;
+    using difference_type = int;
+    using value_type = T;
+    using pointer = const T*;
+    using reference = const T&;
+
     friend bool operator==(const ConstIterator& lhs, const ConstIterator& rhs) {
       assert(lhs.host_ == rhs.host_);
       return lhs.curr_node_ == rhs.curr_node_;
@@ -44,11 +52,13 @@ class ImplicitTreap {
      * [begin, end).
      * @return ConstIterator new shifted iterator.
      */
-    friend ConstIterator operator+(const ConstIterator& lhs, int shift);
+    friend ConstIterator operator+(const ConstIterator& lhs,
+                                   difference_type shift);
     /**
      * @overload
      */
-    friend ConstIterator operator+(int shift, const ConstIterator& rhs) {
+    friend ConstIterator operator+(difference_type shift,
+                                   const ConstIterator& rhs) {
       return rhs + shift;
     }
     /**
@@ -62,7 +72,8 @@ class ImplicitTreap {
      * [begin, end).
      * @return ConstIterator new shifted iterator.
      */
-    friend ConstIterator operator-(const ConstIterator& lhs, int shift) {
+    friend ConstIterator operator-(const ConstIterator& lhs,
+                                   difference_type shift) {
       return lhs + (-shift);
     }
     /**
@@ -72,7 +83,8 @@ class ImplicitTreap {
      * @return int number of elements between two iterators, can be negative if
      * the rhs iterator preceedes this iterator.
      */
-    friend int operator-(const ConstIterator& lhs, const ConstIterator& rhs);
+    friend difference_type operator-(const ConstIterator& lhs,
+                                     const ConstIterator& rhs);
     /**
      * @brief Creates empty iterator. It is invalid. Therefore result of
      * dereferencing or comparing operations is not specified.
@@ -129,18 +141,40 @@ class ImplicitTreap {
       return ConstIterator{old_node, host_};
     }
     /**
+     * @brief Shifts current iterator to the given number of positions to the
+     * right
+     *
+     * @param shift number of positions on which iterator should be shifted
+     * @return ConstIterator& shifted iterator.
+     */
+    ConstIterator& operator+=(difference_type shift) {
+      *this = *this + shift;
+      return *this;
+    }
+    /**
+     * @brief Shifts current iterator to the given number of positions to the
+     * left
+     *
+     * @param shift number of positions on which iterator should be shifted
+     * @return ConstIterator& shifted iterator.
+     */
+    ConstIterator& operator-=(difference_type shift) {
+      *this = *this - shift;
+      return *this;
+    }
+    /**
      * @brief Dereferences this iterator. Should be called only on valid
      * iterator.
      *
-     * @return const T& reference to the value stored in the given position.
+     * @return reference reference to the value stored in the given position.
      */
-    const T& operator*() const { return curr_node_->value; }
+    reference operator*() const { return curr_node_->value; }
     /**
      * @brief Provides constant access to the value pointed by iterator.
      *
-     * @return const T* pointer to the value at which iterator currently points.
+     * @return pointer pointer to the value at which iterator currently points.
      */
-    const T* operator->() const { return &curr_node_->value; }
+    pointer operator->() const { return &curr_node_->value; }
 
    private:
     /**
@@ -162,6 +196,13 @@ class ImplicitTreap {
   class Iterator {
    public:
     friend class ImplicitTreap;
+
+    using iterator_category = std::random_access_iterator_tag;
+    using difference_type = int;
+    using value_type = T;
+    using pointer = T*;
+    using reference = T&;
+
     friend bool operator==(const Iterator& lhs, const Iterator& rhs) {
       assert(lhs.host_ == rhs.host_);
       return lhs.curr_node_ == rhs.curr_node_;
@@ -180,11 +221,11 @@ class ImplicitTreap {
      * [begin, end).
      * @return Iterator new shifted iterator.
      */
-    friend Iterator operator+(const Iterator& lhs, int shift);
+    friend Iterator operator+(const Iterator& lhs, difference_type shift);
     /**
      * @overload
      */
-    friend Iterator operator+(int shift, const Iterator& rhs) {
+    friend Iterator operator+(difference_type shift, const Iterator& rhs) {
       return rhs + shift;
     }
     /**
@@ -194,7 +235,7 @@ class ImplicitTreap {
      * @return int number of elements between two iterators, can be negative if
      * the rhs iterator preceedes this iterator.
      */
-    friend int operator-(const Iterator& lhs, const Iterator& rhs);
+    friend difference_type operator-(const Iterator& lhs, const Iterator& rhs);
     /**
      * @brief Shifts iterator in the random access manner to the left.
      * Complexity O(log n).
@@ -206,7 +247,7 @@ class ImplicitTreap {
      * [begin, end).
      * @return Iterator new shifted iterator.
      */
-    friend Iterator operator-(const Iterator& lhs, int shift) {
+    friend Iterator operator-(const Iterator& lhs, difference_type shift) {
       return lhs + (-shift);
     }
     /**
@@ -272,18 +313,40 @@ class ImplicitTreap {
       return Iterator{old_node, host_};
     }
     /**
+     * @brief Shifts current iterator to the given number of positions to the
+     * right
+     *
+     * @param shift number of positions on which iterator should be shifted
+     * @return ConstIterator& shifted iterator.
+     */
+    Iterator& operator+=(difference_type shift) {
+      *this = *this + shift;
+      return *this;
+    }
+    /**
+     * @brief Shifts current iterator to the given number of positions to the
+     * left
+     *
+     * @param shift number of positions on which iterator should be shifted
+     * @return ConstIterator& shifted iterator.
+     */
+    Iterator& operator-=(difference_type shift) {
+      *this = *this - shift;
+      return *this;
+    }
+    /**
      * @brief Dereferences this iterator. Should be called only on valid
      * iterator.
      *
-     * @return T& reference to the value stored in the given position.
+     * @return reference reference to the value stored in the given position.
      */
-    T& operator*() { return curr_node_->value; }
+    reference operator*() { return curr_node_->value; }
     /**
      * @brief Provides access to the value pointed by iterator.
      *
-     * @return T* pointer to the value at which iterator currently points.
+     * @return pointer pointer to the value at which iterator currently points.
      */
-    T* operator->() const { return &curr_node_->value; }
+    pointer operator->() const { return &curr_node_->value; }
 
    private:
     /**
@@ -564,19 +627,6 @@ class ImplicitTreap {
    * @return ConstIterator
    */
   ConstIterator CEnd() const { return ConstIterator{nullptr, this}; }
-  /**
-   * @brief Converts the structure into vector by copying each element into one.
-   * Complexity O(n).
-   * @return Created vector, which containes all elements from the treap.
-   */
-  std::vector<T> ConvertToVector() const {
-    std::vector<T> result;
-    result.reserve(Size());
-    for (auto it = CBegin(); it != CEnd(); ++it) {
-      result.push_back(*it);
-    }
-    return result;
-  }
 
  private:
   friend int operator-(const ImplicitTreap<T>::Iterator& lhs,
