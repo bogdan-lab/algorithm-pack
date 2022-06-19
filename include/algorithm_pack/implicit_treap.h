@@ -34,6 +34,14 @@ class ImplicitTreap {
       return lhs.curr_node_ != rhs.curr_node_;
     }
     /**
+     * @brief Returns the number of elelements between two iterators
+     *
+     * @param rhs the second iterator
+     * @return int number of elements between two iterators, can be negative if
+     * the rhs iterator preceedes this iterator.
+     */
+    friend int operator-(const ConstIterator& lhs, const ConstIterator& rhs);
+    /**
      * @brief Creates empty iterator. It is invalid. Therefore result of
      * dereferencing or comparing operations is not specified.
      */
@@ -118,6 +126,7 @@ class ImplicitTreap {
      * @return ConstIterator new shifted iterator.
      */
     ConstIterator operator-(int shift) const { return *this + (-shift); }
+
     /**
      * @brief Dereferences this iterator. Should be called only on valid
      * iterator.
@@ -160,6 +169,14 @@ class ImplicitTreap {
       assert(lhs.host_ == rhs.host_);
       return lhs.curr_node_ != rhs.curr_node_;
     }
+    /**
+     * @brief Returns the number of elelements between two iterators
+     *
+     * @param rhs the second iterator
+     * @return int number of elements between two iterators, can be negative if
+     * the rhs iterator preceedes this iterator.
+     */
+    friend int operator-(const Iterator& lhs, const Iterator& rhs);
     /**
      * @brief Creates empty iterator. It is invalid. Therefore result of
      * dereferencing or comparing operations is not specified.
@@ -252,6 +269,7 @@ class ImplicitTreap {
      * @return Iterator new shifted iterator.
      */
     Iterator operator-(int shift) const { return *this + (-shift); }
+
     /**
      * @brief Dereferences this iterator. Should be called only on valid
      * iterator.
@@ -560,6 +578,24 @@ class ImplicitTreap {
   }
 
  private:
+  friend int operator-(const ImplicitTreap<T>::Iterator& lhs,
+                       const ImplicitTreap<T>::Iterator& rhs) {
+    assert(lhs.host_ == rhs.host_);
+    size_t lhs_number = lhs.curr_node_ ? GetElementNumber(lhs.curr_node_)
+                                       : lhs.host_->Size() + 1;
+    size_t rhs_number = rhs.curr_node_ ? GetElementNumber(rhs.curr_node_)
+                                       : rhs.host_->Size() + 1;
+    return lhs_number - rhs_number;
+  }
+  friend int operator-(const ImplicitTreap<T>::ConstIterator& lhs,
+                       const ImplicitTreap<T>::ConstIterator& rhs) {
+    assert(lhs.host_ == rhs.host_);
+    size_t lhs_number = lhs.curr_node_ ? GetElementNumber(lhs.curr_node_)
+                                       : lhs.host_->Size() + 1;
+    size_t rhs_number = rhs.curr_node_ ? GetElementNumber(rhs.curr_node_)
+                                       : rhs.host_->Size() + 1;
+    return lhs_number - rhs_number;
+  }
   /**
    * @brief Describes single element stored in the treap.
    */

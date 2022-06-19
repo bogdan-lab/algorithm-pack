@@ -488,11 +488,37 @@ TEST(ImplicitTreapTest, RandomAccessIteratorShifts2) {
     int index_from = dist(rnd);
     int index_to = dist(rnd);
     int shift = index_to - index_from;
-    EXPECT_EQ(*((it + index_from) + shift), input[index_to])
-        << "from " << index_from << " to " << index_to;
-    EXPECT_EQ(*((cit + index_from) + shift), input[index_to])
-        << "from " << index_from << " to " << index_to;
+    EXPECT_EQ(*((it + index_from) + shift), input[index_to]);
+    EXPECT_EQ(*((cit + index_from) + shift), input[index_to]);
   }
+}
+
+TEST(ImplicitTreapTest, RandomAccessIteratorDifference) {
+  std::vector<int> input(10000);
+  std::iota(input.begin(), input.end(), 0);
+  alpa::ImplicitTreap<int> test(input, /*seed=*/56);
+  std::mt19937 rnd(42);
+  std::uniform_int_distribution<int> dist(0, input.size() - 1);
+  int count = 500;
+  auto it = test.Begin();
+  auto cit = test.CBegin();
+  while (count--) {
+    int index_from = dist(rnd);
+    int index_to = dist(rnd);
+    int expected = index_to - index_from;
+    auto it_from = it + index_from;
+    auto it_to = it + index_to;
+    auto cit_from = cit + index_from;
+    auto cit_to = cit + index_to;
+    EXPECT_EQ(it_to - it_from, expected);
+    EXPECT_EQ(cit_to - cit_from, expected);
+    EXPECT_EQ(cit_to - it_from, expected);
+    EXPECT_EQ(it_to - cit_from, expected);
+  }
+  EXPECT_EQ(test.End() - it, test.Size());
+  EXPECT_EQ(test.End() - cit, test.Size());
+  EXPECT_EQ(test.CEnd() - cit, test.Size());
+  EXPECT_EQ(test.End() - cit, test.Size());
 }
 
 TEST(ImplicitTreapTest, Extract1) {
