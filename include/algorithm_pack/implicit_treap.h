@@ -34,6 +34,38 @@ class ImplicitTreap {
       return lhs.curr_node_ != rhs.curr_node_;
     }
     /**
+     * @brief Shifts iterator in the random access manner to the right.
+     * Complexity O(log n).
+     *
+     * @param lhs starting iterator from which shift is performed.
+     * @param shift number of position on which iterator has to be shifted. If
+     * negative iterator will be shifted to the left. The shift value should be
+     * correct, this is after shifting iterator should remain in the range
+     * [begin, end).
+     * @return ConstIterator new shifted iterator.
+     */
+    friend ConstIterator operator+(const ConstIterator& lhs, int shift);
+    /**
+     * @overload
+     */
+    friend ConstIterator operator+(int shift, const ConstIterator& rhs) {
+      return rhs + shift;
+    }
+    /**
+     * @brief Shifts iterator in the random access manner to the left.
+     * Complexity O(log n).
+     *
+     * @param lhs starting iterator from which shift is performed.
+     * @param shift number of position on which iterator has to be shifted. If
+     * negative iterator will be shifted to the right. The shift value should be
+     * correct, this is after shifting iterator should remain in the range
+     * [begin, end).
+     * @return ConstIterator new shifted iterator.
+     */
+    friend ConstIterator operator-(const ConstIterator& lhs, int shift) {
+      return lhs + (-shift);
+    }
+    /**
      * @brief Returns the number of elelements between two iterators
      *
      * @param rhs the second iterator
@@ -97,37 +129,6 @@ class ImplicitTreap {
       return ConstIterator{old_node, host_};
     }
     /**
-     * @brief Shifts iterator in the random access manner to the right.
-     * Complexity O(log n).
-     *
-     * @param shift number of position on which iterator has to be shifted. If
-     * negative iterator will be shifted to the left. The shift value should be
-     * correct, this is after shifting iterator should remain in the range
-     * [begin, end).
-     * @return ConstIterator new shifted iterator.
-     */
-    ConstIterator operator+(int shift) const {
-      assert(host_);
-      if (!curr_node_) {
-        // We are trying to shift from end() iterator
-        return ConstIterator(GetElement(host_->root_, host_->size_ + shift + 1),
-                             host_);
-      }
-      return ConstIterator(ShiftNode(curr_node_, host_->root_, shift), host_);
-    }
-    /**
-     * @brief Shifts iterator in the random access manner to the left.
-     * Complexity O(log n).
-     *
-     * @param shift number of position on which iterator has to be shifted. If
-     * negative iterator will be shifted to the right. The shift value should be
-     * correct, this is after shifting iterator should remain in the range
-     * [begin, end).
-     * @return ConstIterator new shifted iterator.
-     */
-    ConstIterator operator-(int shift) const { return *this + (-shift); }
-
-    /**
      * @brief Dereferences this iterator. Should be called only on valid
      * iterator.
      *
@@ -170,6 +171,23 @@ class ImplicitTreap {
       return lhs.curr_node_ != rhs.curr_node_;
     }
     /**
+     * @brief Shifts iterator in the random access manner to the right.
+     * Complexity O(log n).
+     *
+     * @param shift number of position on which iterator has to be shifted. If
+     * negative iterator will be shifted to the left. The shift value should be
+     * correct, this is after shifting iterator should remain in the range
+     * [begin, end).
+     * @return Iterator new shifted iterator.
+     */
+    friend Iterator operator+(const Iterator& lhs, int shift);
+    /**
+     * @overload
+     */
+    friend Iterator operator+(int shift, const Iterator& rhs) {
+      return rhs + shift;
+    }
+    /**
      * @brief Returns the number of elelements between two iterators
      *
      * @param rhs the second iterator
@@ -177,6 +195,20 @@ class ImplicitTreap {
      * the rhs iterator preceedes this iterator.
      */
     friend int operator-(const Iterator& lhs, const Iterator& rhs);
+    /**
+     * @brief Shifts iterator in the random access manner to the left.
+     * Complexity O(log n).
+     *
+     * @param lhs starting iterator from which shift is performed.
+     * @param shift number of position on which iterator has to be shifted. If
+     * negative iterator will be shifted to the right. The shift value should be
+     * correct, this is after shifting iterator should remain in the range
+     * [begin, end).
+     * @return Iterator new shifted iterator.
+     */
+    friend Iterator operator-(const Iterator& lhs, int shift) {
+      return lhs + (-shift);
+    }
     /**
      * @brief Creates empty iterator. It is invalid. Therefore result of
      * dereferencing or comparing operations is not specified.
@@ -239,37 +271,6 @@ class ImplicitTreap {
                               : ImplicitTreap::FindLastNode(host_->root_);
       return Iterator{old_node, host_};
     }
-    /**
-     * @brief Shifts iterator in the random access manner to the right.
-     * Complexity O(log n).
-     *
-     * @param shift number of position on which iterator has to be shifted. If
-     * negative iterator will be shifted to the left. The shift value should be
-     * correct, this is after shifting iterator should remain in the range
-     * [begin, end).
-     * @return Iterator new shifted iterator.
-     */
-    Iterator operator+(int shift) const {
-      assert(host_);
-      if (!curr_node_) {
-        // We are trying to shift from end() iterator
-        return Iterator(GetElement(host_->root_, host_->size_ + shift + 1),
-                        host_);
-      }
-      return Iterator(ShiftNode(curr_node_, host_->root_, shift), host_);
-    }
-    /**
-     * @brief Shifts iterator in the random access manner to the left.
-     * Complexity O(log n).
-     *
-     * @param shift number of position on which iterator has to be shifted. If
-     * negative iterator will be shifted to the right. The shift value should be
-     * correct, this is after shifting iterator should remain in the range
-     * [begin, end).
-     * @return Iterator new shifted iterator.
-     */
-    Iterator operator-(int shift) const { return *this + (-shift); }
-
     /**
      * @brief Dereferences this iterator. Should be called only on valid
      * iterator.
@@ -595,6 +596,28 @@ class ImplicitTreap {
     size_t rhs_number = rhs.curr_node_ ? GetElementNumber(rhs.curr_node_)
                                        : rhs.host_->Size() + 1;
     return lhs_number - rhs_number;
+  }
+  friend ConstIterator operator+(const ConstIterator& lhs, int shift) {
+    assert(lhs.host_);
+    if (!lhs.curr_node_) {
+      // We are trying to shift from end() iterator
+      return ConstIterator(
+          GetElement(lhs.host_->root_, lhs.host_->size_ + shift + 1),
+          lhs.host_);
+    }
+    return ConstIterator(ShiftNode(lhs.curr_node_, lhs.host_->root_, shift),
+                         lhs.host_);
+  }
+  friend Iterator operator+(const Iterator& lhs, int shift) {
+    assert(lhs.host_);
+    if (!lhs.curr_node_) {
+      // We are trying to shift from end() iterator
+      return Iterator(
+          GetElement(lhs.host_->root_, lhs.host_->size_ + shift + 1),
+          lhs.host_);
+    }
+    return Iterator(ShiftNode(lhs.curr_node_, lhs.host_->root_, shift),
+                    lhs.host_);
   }
   /**
    * @brief Describes single element stored in the treap.

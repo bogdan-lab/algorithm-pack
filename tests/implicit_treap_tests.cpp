@@ -434,14 +434,24 @@ TEST(ImplicitTreapTest, RandomAccessIteratorShifts1) {
     auto cit = test.CBegin();
     EXPECT_EQ(*(it + 1), input[1]);
     EXPECT_EQ(*(cit + 1), input[1]);
+    EXPECT_EQ(*(1 + it), input[1]);
+    EXPECT_EQ(*(1 + cit), input[1]);
     EXPECT_EQ(*(it + 0), input[0]);
     EXPECT_EQ(*(cit + 0), input[0]);
+    EXPECT_EQ(*(0 + it), input[0]);
+    EXPECT_EQ(*(0 + cit), input[0]);
     EXPECT_EQ(*(it + 3), input[3]);
     EXPECT_EQ(*(cit + 3), input[3]);
+    EXPECT_EQ(*(3 + it), input[3]);
+    EXPECT_EQ(*(3 + cit), input[3]);
     EXPECT_EQ(*(it + (input.size() - 1)), input.back());
     EXPECT_EQ(*(cit + (input.size() - 1)), input.back());
+    EXPECT_EQ(*((input.size() - 1) + it), input.back());
+    EXPECT_EQ(*((input.size() - 1) + cit), input.back());
     EXPECT_EQ((it + input.size()), test.End());
     EXPECT_EQ((cit + input.size()), test.CEnd());
+    EXPECT_EQ((input.size() + it), test.End());
+    EXPECT_EQ((input.size() + cit), test.CEnd());
   }
   {
     auto it = test.End();
