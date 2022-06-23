@@ -8,31 +8,51 @@
 namespace alpa {
 /**
  * @brief Realization of the treap (tree + heap) structure as template.
- * Class represents a binary tree, which uses as key, user given key combined
- * with random priority. The resulting tree structure is balanced. Current
- * structure stores only unique user given keys.
- * For the key type one has to determine `operator<()`
+ *
+ * Class represents a binary tree, which uses as a key a combination of the user
+ * given key and priority. The resulted tree behaves like binary search tree
+ * according to the user provided keys and behaves like a heap according to
+ * priorities. If the priority of all keys are random the tree will be balanced.
+ * The tree stores only unique user given keys. For the key type one has to
+ * determine `operator<()`
  */
 template <typename K, typename V>
 class Treap {
  public:
-  /**@brief Constructs empty tree initialized with default seed.*/
+  /**
+   * @brief Constructs an empty tree with default seed.
+   *
+   * The seed is used in random generator for providing priorities.
+   */
   Treap() = default;
-  /**@brief Constructs empty tree initialized with the given seed.*/
+  /**
+   * @brief  Constructs empty tree initialized with the given seed.
+   *
+   * The seed is used in random generator for providing priorities.
+   */
   Treap(uint64_t seed) : rnd_(seed) {}
-
+  /**
+   * @brief Destroy the Treap object by deleting each node.
+   */
   ~Treap() { DeleteTree(root_); }
   /**
    * @brief Sets seed of the random generator associated with current tree.
+   *
    * Random generator is used for creating priorities.
    */
   void SetSeed(uint64_t seed) { rnd_.seed(seed); }
   /**
-   * @brief Inserts given (key, value) into the tree. If the given key is
-   * laready present in the tree, the later is unchanged. Returns pointer to the
-   * inserted value. This is, if the insertion was successfull method will
-   * return the pointer to the newly inserted value, otherwise it will return
-   * the pointer to the old value, found in the tree. Method will never return
+   * @brief Inserts given (key, value) into the tree.
+   *
+   * If the given key is already present in the tree, the later is unchanged.
+   * Returns pointer to the inserted value. Complexity O(log n)
+   *
+   * @param key user provided key with which the value should be stored
+   * @param value value which is intended to be stored
+   *
+   * @return V* pointer to the inserted value. If the insertion was successful
+   * pointer to the new value will be returned. If such key is already present
+   * in the treap the pointer to its value will be returned. Cannot return
    * nullptr.
    */
   V* Insert(const K& key, const V& value) {
@@ -60,11 +80,16 @@ class Treap {
     ++size_;
     return &new_node->item.second;
   }
-
   /**
-   * @brief Removes node with the given key from the tree. If there is no node
-   * with such key in the tree, nothing will happen. Retutns true if the node
-   * was deleted, false otherwise.
+   * @brief Removes the key and associated value from the treap.
+   *
+   * If there is no key equivalent to the given one the treap will not be
+   * changed. Complexity O(log n).
+   *
+   * @param key the key which is inteded to be removed from the treap
+   *
+   * @return true if the equivalent key was found in the treap and it was
+   * deleted, false otherwise.
    */
   bool Erase(const K& key) {
     Node* parent = nullptr;
@@ -93,10 +118,13 @@ class Treap {
     if (!size_) root_ = nullptr;
     return true;
   }
-
   /**
-   * @brief Returns non owning pointer to the corresponding value. If the given
-   * key is not present in the tree, nullptr is returned.
+   * @brief Searches the given key in the treap.
+   *
+   * @param key key to be find in the treap.
+   *
+   * @return V* non owning pointer to the value associated with the given key.
+   * If the key is not found nullptr will be returned.
    */
   V* Find(const K& key) {
     Node* curr_ptr = root_;
@@ -111,14 +139,28 @@ class Treap {
     }
     return nullptr;
   }
-
-  /**@brief Returns true if treap is empty, false otherwise.*/
+  /**
+   * @brief Checks whether the treap is empty or not.
+   * @return true if the treap is empty, false otherwise.
+   */
   bool Empty() const { return root_ == nullptr; }
-  /**@brief Returns number of elements currently stored in the tree.*/
+  /**
+   * @brief Gets the number of elements in the treap.
+   */
   size_t Size() const { return size_; }
 
  private:
+  /**
+   * @brief Describes single node in the treap.
+   */
   struct Node {
+    /**
+     * @brief Construct a new Node object with given parameters
+     *
+     * @param k node key
+     * @param v node value
+     * @param p node priority
+     */
     Node(const K& k, const V& v, uint64_t p) : item(k, v), priority(p) {}
 
     std::pair<const K, V> item;
@@ -127,10 +169,17 @@ class Treap {
     Node* right = nullptr;
   };
   /**
-   * @brief Merges two trees passed via their roots.
-   * Requires that all keys in the left tree ARE NOT LARGER than keys in the
-   * right tree.
-   * Can return nullptr if both input parameters are nullptr.
+   * @brief Merges two treaps passed as their roots.
+   *
+   * Note that method does not perform any copying, it simply rearranges
+   * pointers. Complexity O(log n).
+   *
+   * @param lhs the first treap root
+   * @param rhs the second treap root
+   * @warning Requires that all keys in the left tree are not larger than keys
+   * in the right tree.
+   * @return root of the merged treap. Can return nullptr if both input
+   * parameters are nullptr.
    */
   static Node* Merge(Node* lhs, Node* rhs) {
     if (!lhs) return rhs;
@@ -150,9 +199,20 @@ class Treap {
     return root;
   }
   /**
-   * @brief Splits current tree in two. The first tree in the result contains
-   * all keys which are smaller than key, the second - all the other.
-   * If one of the resulting trees is empty, nullptr is returned.
+   * @brief Splits current tree in two.
+   *
+   * Method does not perform any copying, it simply rearranges pointers.
+   * Complexity O(log n).
+   *
+   * @param key key according to which split will be performed. Does not
+   * required to be in the treap.
+   * @param root root of the treap which is inteded to be splitted. Can be
+   * nullptr.
+   *
+   * @return two treap roots. The first treap in the result contains
+   * all keys which are smaller than the given key, the second - contains all
+   * the other. If one of the resulting trees is empty, the corresponding root
+   * is nullptr.
    */
   static std::pair<Node*, Node*> Split(const K& key, Node* root) {
     std::pair<Node*, Node*> result{nullptr, nullptr};
@@ -174,7 +234,10 @@ class Treap {
     }
     return result;
   }
-  /**@brief Deletes all nodes beneath the given root.*/
+  /**
+   * @brief Deletes all nodes in the treap with the given root. Complexity O(n).
+   * @param root root of treap to be deleted. Can be nullptr.
+   */
   static void DeleteTree(Node* root) {
     if (!root) return;
     DeleteTree(root->left);
@@ -184,6 +247,11 @@ class Treap {
   /**
    * @brief Adds child to the given parent. Parent pointer should not be
    * nullptr.
+   * @param parent pointer to the parent node. Should not be nullptr.
+   * @param child child node to be added to the parent. Can be nullptr.
+   * @param to_left true if the child should be added a as the left child of the
+   * parent, false if the child should be added as the right child of the
+   * parent.
    */
   static void AddChildToParent(Node* parent, Node* child, bool to_left) {
     assert(parent);
