@@ -693,3 +693,18 @@ TEST(ImplicitTreapTest, SwapTest) {
   EXPECT_THAT(std::vector<int>(rhs.Begin(), rhs.End()),
               ElementsAreArray(input_1));
 }
+
+TEST(ImplicitTreapTest, ClearTest) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8};
+  alpa::ImplicitTreap<int> test(input, /*seed=*/123);
+  test.Clear();
+  EXPECT_EQ(test.Size(), 0);
+  EXPECT_TRUE(test.Empty());
+  test.Insert(1, /*pos=*/0);
+  test.Insert(12, /*pos=*/0);
+  test.Insert(123, /*pos=*/0);
+  alpa::ImplicitTreap<int> dest(std::move(test));
+  test.Clear();
+  EXPECT_EQ(test.Size(), 0);
+  EXPECT_TRUE(test.Empty());
+}

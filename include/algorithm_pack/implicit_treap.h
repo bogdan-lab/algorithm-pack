@@ -603,6 +603,14 @@ class ImplicitTreap {
     }
   }
   /**
+   * @brief Removes all elements from the treap, leaving it empty.
+   */
+  void Clear() {
+    DeleteTree(root_);
+    root_ = nullptr;
+    size_ = 0;
+  }
+  /**
    * @brief Gets begin iterator of the container. Complexity O(log n).
    */
   Iterator Begin() { return Iterator{FindFirstNode(root_), this}; }
