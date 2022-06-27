@@ -120,7 +120,8 @@ TEST(ImplicitTreapTest, Constructors1) {
   alpa::ImplicitTreap<int> x;
   alpa::ImplicitTreap<int> test(std::move(x));
   EXPECT_TRUE(test.Empty());
-  alpa::ImplicitTreap<int> test2 = std::move(test);
+  alpa::ImplicitTreap<int> test2({1, 2, 3, 4, 5}, /*seed=*/54);
+  test2 = std::move(test);
   EXPECT_TRUE(test2.Empty());
 }
 
@@ -146,6 +147,46 @@ TEST(ImplicitTreapTest, Constructor4) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
   alpa::ImplicitTreap<int> test(input, /*seed=*/15);
   test = std::move(test);
+  EXPECT_EQ(test.Size(), input.size());
+  EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+              ElementsAreArray(input));
+}
+
+TEST(ImplicitTreapTest, Constructors5) {
+  alpa::ImplicitTreap<int> x;
+  alpa::ImplicitTreap<int> test(x);
+  EXPECT_TRUE(test.Empty());
+  alpa::ImplicitTreap<int> test2({1, 2, 3, 4, 5}, /*seed=*/54);
+  test2 = test;
+  EXPECT_TRUE(test2.Empty());
+}
+
+TEST(ImplicitTreapTest, Constructors6) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
+  alpa::ImplicitTreap<int> x(input, /*seed=*/15);
+  alpa::ImplicitTreap<int> test(x);
+  EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+              ElementsAreArray(input));
+  EXPECT_THAT(std::vector<int>(x.Begin(), x.End()), ElementsAreArray(input));
+  EXPECT_EQ(test.Size(), x.Size());
+}
+
+TEST(ImplicitTreapTest, Constructors7) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
+  alpa::ImplicitTreap<int> x(input, /*seed=*/15);
+  alpa::ImplicitTreap<int> test(std::vector<int>{10, 20}, /*seed=*/15);
+  test = x;
+  EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+              ElementsAreArray(input));
+  EXPECT_THAT(std::vector<int>(x.Begin(), x.End()), ElementsAreArray(input));
+  EXPECT_EQ(test.Size(), x.Size());
+}
+
+TEST(ImplicitTreapTest, Constructor8) {
+  // Copy assignment to itself
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
+  alpa::ImplicitTreap<int> test(input, /*seed=*/15);
+  test = test;
   EXPECT_EQ(test.Size(), input.size());
   EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
               ElementsAreArray(input));

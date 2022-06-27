@@ -371,8 +371,6 @@ class ImplicitTreap {
    * generator
    */
   ImplicitTreap(uint64_t seed) : rnd_(seed) {}
-  ImplicitTreap(const ImplicitTreap& other) = delete;
-  ImplicitTreap& operator=(const ImplicitTreap& other) = delete;
   /**
    * @brief Construct a new Implicit Treap object by moving data from other.
    * Complexity O(1).
@@ -386,21 +384,50 @@ class ImplicitTreap {
   }
   /**
    * @brief Replaces current treap data by the data from other. Old data is
-   * destroyed.
+   * destroyed. Complexity O(n), where n is the old size of this treap.
    *
-   * Does nothing if this treap and othe has the same root. Note that check for
-   * the root equality is the only which is performed. In other words, operator
-   * does not consider situations when two treaps share same nodes deeper in the
-   * structure.
+   * Operator does not consider situations when two treaps share
+   * same nodes deep in the structure.
    *
-   * @param other - object from which data is moved from. If moving from this
-   * object was performed, all its iterators become invalidated.
+   * @param other - object from which data is moved from. After this operator
+   * call, all its iterators become invalidated.
    * @return ImplicitTreap& reference to the new treap, which contains data from
    * other.
    */
   ImplicitTreap& operator=(ImplicitTreap&& other) noexcept {
     ImplicitTreap tmp(std::move(other));
     Swap(tmp);
+    return *this;
+  }
+  /**
+   * @brief Construct a new Implicit Treap object by copying content of other.
+   * Complexity O(n).
+   *
+   * Note that only content of the `other` will be copied and objects will be
+   * equal in terms of public interface. However their internal representations
+   * may differ.
+   *
+   * @param other its content will be copied to this treap.
+   */
+  ImplicitTreap(const ImplicitTreap& other) : rnd_(other.rnd_) {
+    size_t count = 0;
+    for (auto it = other.Begin(); it != other.End(); ++it) {
+      Insert(*it, count++);
+    }
+  }
+  /**
+   * @brief Replaces current content of this by the one copied from `other`. Old
+   * data is destroyed. Complexity O(n + m), where n is old size of the treap
+   * and m is new one.
+   *
+   * @param other its content will replace current content of this.
+   * @return ImplicitTreap& reference to the copied object.
+   */
+  ImplicitTreap& operator=(const ImplicitTreap& other) {
+    if (this != &other) {
+      ImplicitTreap tmp(other);
+      Swap(tmp);
+    }
     return *this;
   }
   /**
