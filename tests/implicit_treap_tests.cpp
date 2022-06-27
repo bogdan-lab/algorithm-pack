@@ -141,6 +141,16 @@ TEST(ImplicitTreapTest, Constructors3) {
               ElementsAreArray(input));
 }
 
+TEST(ImplicitTreapTest, Constructor4) {
+  // Move assignment to itself
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
+  alpa::ImplicitTreap<int> test(input, /*seed=*/15);
+  test = std::move(test);
+  EXPECT_EQ(test.Size(), input.size());
+  EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+              ElementsAreArray(input));
+}
+
 TEST(ImplicitTreapTest, ElementAccess1) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
   alpa::ImplicitTreap<int> test(input, /*seed=*/15);
@@ -667,4 +677,19 @@ TEST(ImplicitTreapTest, StlMethodCalls) {
   EXPECT_EQ(*std::next(cit), 7);
   EXPECT_EQ(*it, 6);
   EXPECT_EQ(*std::prev(it), 5);
+}
+
+TEST(ImplicitTreapTest, SwapTest) {
+  std::vector<int> input_1{1, 2, 3, 4, 5, 6};
+  std::vector<int> input_2{6, 5, 4, 3, 2, 1};
+  alpa::ImplicitTreap<int> lhs{input_1, /*seed=*/1};
+  alpa::ImplicitTreap<int> rhs{input_2, /*seed=*/2};
+  lhs.Swap(rhs);
+  EXPECT_THAT(std::vector<int>(lhs.Begin(), lhs.End()),
+              ElementsAreArray(input_2));
+  EXPECT_THAT(std::vector<int>(rhs.Begin(), rhs.End()),
+              ElementsAreArray(input_1));
+  rhs.Swap(rhs);
+  EXPECT_THAT(std::vector<int>(rhs.Begin(), rhs.End()),
+              ElementsAreArray(input_1));
 }

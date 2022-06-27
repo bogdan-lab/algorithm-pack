@@ -375,14 +375,14 @@ class ImplicitTreap {
   ImplicitTreap& operator=(const ImplicitTreap& other) = delete;
   /**
    * @brief Construct a new Implicit Treap object by moving data from other.
+   * Complexity O(1).
    *
-   * @param other - object from which data is moved from. All iterators of this
-   * object become invalidated.
+   * @param other - object from which data is moved from. After this constructor
+   * the state of the `other` is not valid.
    */
-  ImplicitTreap(ImplicitTreap&& other) {
-    root_ = std::exchange(other.root_, nullptr);
-    rnd_ = std::move(other.rnd_);
-    size_ = std::exchange(other.size_, 0);
+  ImplicitTreap(ImplicitTreap&& other) noexcept
+      : root_(other.root_), rnd_(other.rnd_), size_(other.size_) {
+    other.root_ = nullptr;
   }
   /**
    * @brief Replaces current treap data by the data from other. Old data is
@@ -398,12 +398,9 @@ class ImplicitTreap {
    * @return ImplicitTreap& reference to the new treap, which contains data from
    * other.
    */
-  ImplicitTreap& operator=(ImplicitTreap&& other) {
-    if (other.root_ == root_) return *this;
-    DeleteTree(root_);
-    root_ = std::exchange(other.root_, nullptr);
-    rnd_ = std::move(other.rnd_);
-    size_ = std::exchange(other.size_, 0);
+  ImplicitTreap& operator=(ImplicitTreap&& other) noexcept {
+    ImplicitTreap tmp(std::move(other));
+    Swap(tmp);
     return *this;
   }
   /**
@@ -457,11 +454,21 @@ class ImplicitTreap {
     root_ = nullptr;
   }
   /**
+   * @brief Swaps the content of the other and current treaps. Complexity O(1).
+   *
+   * @param other its content will be replaced with the content of this treap.
+   * All iterators are invalidated.
+   */
+  void Swap(ImplicitTreap& other) noexcept {
+    std::swap(root_, other.root_);
+    std::swap(rnd_, other.rnd_);
+    std::swap(size_, other.size_);
+  }
+  /**
    * @brief Sets seed of the random generator associated with current tree.
    * Random generator is used for creating priorities.
    */
   void SetSeed(uint64_t seed) { rnd_.seed(seed); }
-
   /**@brief Returns true if the container is empty*/
   bool Empty() const { return !root_; }
   /**@brief Gets the number of elements in the container.*/
@@ -791,7 +798,7 @@ class ImplicitTreap {
    *
    * @param root - root of the given treap
    */
-  static void DeleteTree(Node* root) {
+  static void DeleteTree(Node* root) noexcept {
     if (!root) return;
     DeleteTree(root->left);
     DeleteTree(root->right);
