@@ -2,6 +2,7 @@
 
 add_executable(unit_tests
     treap_tests.cpp
+    implicit_treap_tests.cpp
     )
 
 gtest_discover_tests(unit_tests)

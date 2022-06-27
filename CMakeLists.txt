@@ -15,7 +15,7 @@ set_project_warnings(project_warnings)
 add_library(algo_pack INTERFACE)
 
 target_include_directories(algo_pack INTERFACE ${CMAKE_SOURCE_DIR}/include)
-
+target_compile_features(algo_pack INTERFACE cxx_std_17)
 
 option(ENABLE_TESTING "Enables test build for the project." ${PROJECT_IS_TOP_LEVEL})
 if(ENABLE_TESTING)
