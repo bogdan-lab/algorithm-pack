@@ -246,7 +246,7 @@ TEST(ImplicitTreapTest, EraseFromTheMiddle) {
   while (!input.empty()) {
     size_t index = input.size() / 2;
     test.Erase(index);
-    input.erase(input.begin() + index);
+    input.erase(input.begin() + static_cast<int>(index));
     EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
                 ElementsAreArray(input));
   }
@@ -256,7 +256,7 @@ TEST(ImplicitTreapTest, EraseFromTheMiddle) {
 TEST(ImplicitTreapTest, RotatePositiveDirection) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
   alpa::ImplicitTreap<int> test(input, /*seed=*/15);
-  for (int i = 1; i < input.size(); ++i) {
+  for (int i = 1; i < static_cast<int>(input.size()); ++i) {
     test.Rotate(i);
     std::rotate(input.begin(), input.end() - i, input.end());
     EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
@@ -267,7 +267,7 @@ TEST(ImplicitTreapTest, RotatePositiveDirection) {
 TEST(ImplicitTreapTest, RotateNegativeDirection) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
   alpa::ImplicitTreap<int> test(input, /*seed=*/15);
-  for (int i = 1; i < input.size(); ++i) {
+  for (int i = 1; i < static_cast<int>(input.size()); ++i) {
     test.Rotate(-i);
     std::rotate(input.begin(), input.begin() + i, input.end());
     EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
@@ -337,7 +337,7 @@ TEST(ImplicitTreapTest, IteratorInvalidationInsert) {
   auto res_end = iterators.back();
   auto cres_end = const_iterators.back();
   EXPECT_EQ(++res_end, end);
-  EXPECT_EQ(++cres_end, end);
+  EXPECT_EQ(++cres_end, cend);
 }
 
 TEST(ImplicitTreapTest, IteratorInvalidationRotate) {
@@ -439,7 +439,7 @@ TEST(ImplicitTreapTest, IteratorCall) {
 TEST(ImplicitTreapTest, Concatenate1) {
   {  // General case
     std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    auto mid_it = input.begin() + input.size() / 2;
+    auto mid_it = input.begin() + static_cast<int>(input.size() / 2);
     alpa::ImplicitTreap<int> lhs{{input.begin(), mid_it},
                                  /*seed=*/42};
     alpa::ImplicitTreap<int> rhs{{mid_it, input.end()},
@@ -514,14 +514,15 @@ TEST(ImplicitTreapTest, RandomAccessIteratorShifts1) {
     EXPECT_EQ(*(cit + 3), input[3]);
     EXPECT_EQ(*(3 + it), input[3]);
     EXPECT_EQ(*(3 + cit), input[3]);
-    EXPECT_EQ(*(it + (input.size() - 1)), input.back());
-    EXPECT_EQ(*(cit + (input.size() - 1)), input.back());
-    EXPECT_EQ(*((input.size() - 1) + it), input.back());
-    EXPECT_EQ(*((input.size() - 1) + cit), input.back());
-    EXPECT_EQ((it + input.size()), test.End());
-    EXPECT_EQ((cit + input.size()), test.CEnd());
-    EXPECT_EQ((input.size() + it), test.End());
-    EXPECT_EQ((input.size() + cit), test.CEnd());
+    int last_index = static_cast<int>(input.size()) - 1;
+    EXPECT_EQ(*(it + last_index), input.back());
+    EXPECT_EQ(*(cit + last_index), input.back());
+    EXPECT_EQ(*(last_index + it), input.back());
+    EXPECT_EQ(*(last_index + cit), input.back());
+    EXPECT_EQ(it + static_cast<int>(input.size()), test.End());
+    EXPECT_EQ(cit + static_cast<int>(input.size()), test.CEnd());
+    EXPECT_EQ(static_cast<int>(input.size()) + it, test.End());
+    EXPECT_EQ(static_cast<int>(input.size()) + cit, test.CEnd());
   }
   {
     auto it = test.End();
@@ -530,10 +531,11 @@ TEST(ImplicitTreapTest, RandomAccessIteratorShifts1) {
     EXPECT_EQ(*(cit - 1), input.back());
     EXPECT_EQ(*(it - 3), input[5]);
     EXPECT_EQ(*(cit - 3), input[5]);
-    EXPECT_EQ(*(it - (input.size() - 1)), input[1]);
-    EXPECT_EQ(*(cit - (input.size() - 1)), input[1]);
-    EXPECT_EQ(*(it - input.size()), input.front());
-    EXPECT_EQ(*(cit - input.size()), input.front());
+    int last_index = static_cast<int>(input.size()) - 1;
+    EXPECT_EQ(*(it - last_index), input[1]);
+    EXPECT_EQ(*(cit - last_index), input[1]);
+    EXPECT_EQ(*(it - static_cast<int>(input.size())), input.front());
+    EXPECT_EQ(*(cit - static_cast<int>(input.size())), input.front());
   }
   {
     auto it = test.Begin() + 3;
@@ -560,7 +562,8 @@ TEST(ImplicitTreapTest, RandomAccessIteratorShifts2) {
   std::iota(input.begin(), input.end(), 0);
   alpa::ImplicitTreap<int> test(input, /*seed=*/56);
   std::mt19937 rnd(42);
-  std::uniform_int_distribution<int> dist(0, input.size() - 1);
+  std::uniform_int_distribution<int> dist(0,
+                                          static_cast<int>(input.size()) - 1);
   int count = 500;
   auto it = test.Begin();
   auto cit = test.CBegin();
@@ -568,8 +571,10 @@ TEST(ImplicitTreapTest, RandomAccessIteratorShifts2) {
     int index_from = dist(rnd);
     int index_to = dist(rnd);
     int shift = index_to - index_from;
-    EXPECT_EQ(*((it + index_from) + shift), input[index_to]);
-    EXPECT_EQ(*((cit + index_from) + shift), input[index_to]);
+    EXPECT_EQ(*((it + index_from) + shift),
+              input[static_cast<size_t>(index_to)]);
+    EXPECT_EQ(*((cit + index_from) + shift),
+              input[static_cast<size_t>(index_to)]);
   }
 }
 
@@ -578,7 +583,8 @@ TEST(ImplicitTreapTest, RandomAccessIteratorDifference) {
   std::iota(input.begin(), input.end(), 0);
   alpa::ImplicitTreap<int> test(input, /*seed=*/56);
   std::mt19937 rnd(42);
-  std::uniform_int_distribution<int> dist(0, input.size() - 1);
+  std::uniform_int_distribution<int> dist(0,
+                                          static_cast<int>(input.size()) - 1);
   int count = 500;
   auto it = test.Begin();
   auto cit = test.CBegin();

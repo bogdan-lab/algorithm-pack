@@ -618,14 +618,14 @@ class ImplicitTreap {
     if (count == 0) {
       return;
     } else if (count > 0) {
-      count = count % size_;
+      size_t normed_count = static_cast<size_t>(count) % size_;
       if (!count) return;
-      std::pair<Node*, Node*> split = Split(size_ - count + 1, root_);
+      std::pair<Node*, Node*> split = Split(size_ - normed_count + 1, root_);
       root_ = Merge(split.second, split.first);
     } else {
-      count = -count % size_;
+      size_t normed_count = static_cast<size_t>(-count) % size_;
       if (!count) return;
-      std::pair<Node*, Node*> split = Split(count + 1, root_);
+      std::pair<Node*, Node*> split = Split(normed_count + 1, root_);
       root_ = Merge(split.second, split.first);
     }
   }
@@ -674,27 +674,33 @@ class ImplicitTreap {
   friend int operator-(const ImplicitTreap<T>::Iterator& lhs,
                        const ImplicitTreap<T>::Iterator& rhs) {
     assert(lhs.host_ == rhs.host_);
-    size_t lhs_number = lhs.curr_node_ ? GetElementNumber(lhs.curr_node_)
-                                       : lhs.host_->Size() + 1;
-    size_t rhs_number = rhs.curr_node_ ? GetElementNumber(rhs.curr_node_)
-                                       : rhs.host_->Size() + 1;
+    auto lhs_number =
+        static_cast<int>(lhs.curr_node_ ? GetElementNumber(lhs.curr_node_)
+                                        : lhs.host_->Size() + 1);
+    auto rhs_number =
+        static_cast<int>(rhs.curr_node_ ? GetElementNumber(rhs.curr_node_)
+                                        : rhs.host_->Size() + 1);
     return lhs_number - rhs_number;
   }
   friend int operator-(const ImplicitTreap<T>::ConstIterator& lhs,
                        const ImplicitTreap<T>::ConstIterator& rhs) {
     assert(lhs.host_ == rhs.host_);
-    size_t lhs_number = lhs.curr_node_ ? GetElementNumber(lhs.curr_node_)
-                                       : lhs.host_->Size() + 1;
-    size_t rhs_number = rhs.curr_node_ ? GetElementNumber(rhs.curr_node_)
-                                       : rhs.host_->Size() + 1;
+    auto lhs_number =
+        static_cast<int>(lhs.curr_node_ ? GetElementNumber(lhs.curr_node_)
+                                        : lhs.host_->Size() + 1);
+    auto rhs_number =
+        static_cast<int>(rhs.curr_node_ ? GetElementNumber(rhs.curr_node_)
+                                        : rhs.host_->Size() + 1);
     return lhs_number - rhs_number;
   }
   friend ConstIterator operator+(const ConstIterator& lhs, int shift) {
     assert(lhs.host_);
     if (!lhs.curr_node_) {
       // We are trying to shift from end() iterator
+      assert(shift <= 0 && lhs.host_->size_ >= static_cast<size_t>(-shift));
       return ConstIterator(
-          GetElement(lhs.host_->root_, lhs.host_->size_ + shift + 1),
+          GetElement(lhs.host_->root_,
+                     lhs.host_->size_ - static_cast<size_t>(-shift) + 1),
           lhs.host_);
     }
     return ConstIterator(ShiftNode(lhs.curr_node_, lhs.host_->root_, shift),
@@ -704,8 +710,10 @@ class ImplicitTreap {
     assert(lhs.host_);
     if (!lhs.curr_node_) {
       // We are trying to shift from end() iterator
+      assert(shift <= 0 && lhs.host_->size_ >= static_cast<size_t>(-shift));
       return Iterator(
-          GetElement(lhs.host_->root_, lhs.host_->size_ + shift + 1),
+          GetElement(lhs.host_->root_,
+                     lhs.host_->size_ - static_cast<size_t>(-shift) + 1),
           lhs.host_);
     }
     return Iterator(ShiftNode(lhs.curr_node_, lhs.host_->root_, shift),
@@ -934,7 +942,7 @@ class ImplicitTreap {
   static Node* GetElement(Node* root, size_t el_number) {
     assert(el_number > 0);
     assert(root);
-    int curr_el_number = GetTreeSize(root->left) + 1;
+    size_t curr_el_number = GetTreeSize(root->left) + 1;
     if (el_number < curr_el_number) {
       return GetElement(root->left, el_number);
     } else if (el_number > curr_el_number) {
@@ -955,10 +963,16 @@ class ImplicitTreap {
    */
   static Node* ShiftNode(const Node* curr_node, const Node* root, int shift) {
     size_t curr_number = GetElementNumber(curr_node);
-    if (curr_number + shift < 1 || curr_number + shift > root->tree_size) {
+    if (shift < 0 && curr_number > static_cast<size_t>(-shift)) {
+      return GetElement(const_cast<Node*>(root),
+                        curr_number - static_cast<size_t>(-shift));
+    } else if (shift >= 0 &&
+               curr_number + static_cast<size_t>(shift) > root->tree_size) {
+      return GetElement(const_cast<Node*>(root),
+                        curr_number + static_cast<size_t>(shift));
+    } else {
       return nullptr;
     }
-    return GetElement(const_cast<Node*>(root), curr_number + shift);
   }
   /**
    * @brief Calculates the element number which corresponds to the given node.
