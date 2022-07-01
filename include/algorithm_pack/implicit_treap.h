@@ -53,13 +53,15 @@ class ImplicitTreap {
      * @return ConstIterator new shifted iterator.
      */
     friend ConstIterator operator+(const ConstIterator& lhs,
-                                   difference_type shift);
+                                   difference_type shift) {
+      return ConstIterator::Advance(lhs, shift);
+    }
     /**
      * @overload
      */
     friend ConstIterator operator+(difference_type shift,
                                    const ConstIterator& rhs) {
-      return rhs + shift;
+      return ConstIterator::Advance(rhs, shift);
     }
     /**
      * @brief Shifts iterator in the random access manner to the left.
@@ -74,7 +76,7 @@ class ImplicitTreap {
      */
     friend ConstIterator operator-(const ConstIterator& lhs,
                                    difference_type shift) {
-      return lhs + (-shift);
+      return ConstIterator::Advance(lhs, -shift);
     }
     /**
      * @brief Returns the number of elelements between two iterators
@@ -84,7 +86,9 @@ class ImplicitTreap {
      * the rhs iterator preceedes this iterator.
      */
     friend difference_type operator-(const ConstIterator& lhs,
-                                     const ConstIterator& rhs);
+                                     const ConstIterator& rhs) {
+      return ConstIterator::Distance(lhs, rhs);
+    }
     /**
      * @brief Creates empty iterator. It is invalid. Therefore result of
      * dereferencing or comparing operations is not specified.
@@ -178,6 +182,47 @@ class ImplicitTreap {
 
    private:
     /**
+     * @brief Returns the distance in elements from the lhs iterator to the rhs.
+     * This is, performes lhs - rhs. Complexity O(log n).
+     *
+     * @param lhs end point
+     * @param rhs start point
+     * @return difference_type number of elements between given iterators.
+     */
+    static difference_type Distance(const ConstIterator& lhs,
+                                    const ConstIterator& rhs) {
+      assert(lhs.host_ == rhs.host_);
+      auto lhs_number =
+          static_cast<int>(lhs.curr_node_ ? GetElementNumber(lhs.curr_node_)
+                                          : lhs.host_->Size() + 1);
+      auto rhs_number =
+          static_cast<int>(rhs.curr_node_ ? GetElementNumber(rhs.curr_node_)
+                                          : rhs.host_->Size() + 1);
+      return lhs_number - rhs_number;
+    }
+    /**
+     * @brief Creates another iterator which is shifted the given number of
+     * positions from the current one. Complexity O(log n).
+     * @warning Method should not be called on an empty iterator.
+     * @param shift number of positions one need to shift current iterator in
+     * order to recieve desired one. Can be negative, but the shifted iterator
+     * has to be in the range of the container, this is in the [Begin, End).
+     * @return ConstIterator the shifted iterator.
+     */
+    static ConstIterator Advance(const ConstIterator& lhs, int shift) {
+      assert(lhs.host_);
+      if (!lhs.curr_node_) {
+        // We are trying to shift from end() iterator
+        assert(shift <= 0 && lhs.host_->size_ >= static_cast<size_t>(-shift));
+        return ConstIterator(
+            GetElement(lhs.host_->root_,
+                       lhs.host_->size_ - static_cast<size_t>(-shift) + 1),
+            lhs.host_);
+      }
+      return ConstIterator(ShiftNode(lhs.curr_node_, lhs.host_->root_, shift),
+                           lhs.host_);
+    }
+    /**
      * @brief Construct a new ConstIterator object for the given treap.
      *
      * @param node - will be used as current iterator node
@@ -221,12 +266,14 @@ class ImplicitTreap {
      * [begin, end).
      * @return Iterator new shifted iterator.
      */
-    friend Iterator operator+(const Iterator& lhs, difference_type shift);
+    friend Iterator operator+(const Iterator& lhs, difference_type shift) {
+      return Iterator::Advance(lhs, shift);
+    }
     /**
      * @overload
      */
     friend Iterator operator+(difference_type shift, const Iterator& rhs) {
-      return rhs + shift;
+      return Iterator::Advance(rhs, shift);
     }
     /**
      * @brief Returns the number of elelements between two iterators
@@ -235,7 +282,9 @@ class ImplicitTreap {
      * @return int number of elements between two iterators, can be negative if
      * the rhs iterator preceedes this iterator.
      */
-    friend difference_type operator-(const Iterator& lhs, const Iterator& rhs);
+    friend difference_type operator-(const Iterator& lhs, const Iterator& rhs) {
+      return Iterator::Distance(lhs, rhs);
+    }
     /**
      * @brief Shifts iterator in the random access manner to the left.
      * Complexity O(log n).
@@ -248,7 +297,7 @@ class ImplicitTreap {
      * @return Iterator new shifted iterator.
      */
     friend Iterator operator-(const Iterator& lhs, difference_type shift) {
-      return lhs + (-shift);
+      return Iterator::Advance(lhs, -shift);
     }
     /**
      * @brief Creates empty iterator. It is invalid. Therefore result of
@@ -349,6 +398,48 @@ class ImplicitTreap {
     pointer operator->() const { return &curr_node_->value; }
 
    private:
+    /**
+     * @brief Returns the distance in elements from the lhs iterator to the rhs.
+     * This is, performes lhs - rhs. Complexity O(log n).
+     *
+     * @param lhs end point
+     * @param rhs start point
+     * @return difference_type number of elements between given iterators.
+     */
+    static difference_type Distance(const Iterator& lhs, const Iterator& rhs) {
+      assert(lhs.host_ == rhs.host_);
+      auto lhs_number =
+          static_cast<int>(lhs.curr_node_ ? GetElementNumber(lhs.curr_node_)
+                                          : lhs.host_->Size() + 1);
+      auto rhs_number =
+          static_cast<int>(rhs.curr_node_ ? GetElementNumber(rhs.curr_node_)
+                                          : rhs.host_->Size() + 1);
+      return lhs_number - rhs_number;
+    }
+
+    /**
+     * @brief Creates another iterator which is shifted the given number of
+     * positions from the current one. Complexity O(log n).
+     * @warning Method should not be called on an empty iterator.
+     * @param shift number of positions one need to shift current iterator in
+     * order to recieve desired one. Can be negative, but the shifted iterator
+     * has to be in the range of the container, this is in the [Begin, End).
+     * @return Iterator the shifted iterator.
+     */
+    static Iterator Advance(const Iterator& lhs, int shift) {
+      assert(lhs.host_);
+      if (!lhs.curr_node_) {
+        // We are trying to shift from end() iterator
+        assert(shift <= 0 && lhs.host_->size_ >= static_cast<size_t>(-shift));
+        return Iterator(
+            GetElement(lhs.host_->root_,
+                       lhs.host_->size_ - static_cast<size_t>(-shift) + 1),
+            lhs.host_);
+      }
+      return Iterator(ShiftNode(lhs.curr_node_, lhs.host_->root_, shift),
+                      lhs.host_);
+    }
+
     /**
      * @brief Construct a new Iterator object for the given treap.
      *
@@ -671,54 +762,6 @@ class ImplicitTreap {
   ConstIterator CEnd() const { return ConstIterator{nullptr, this}; }
 
  private:
-  friend int operator-(const ImplicitTreap<T>::Iterator& lhs,
-                       const ImplicitTreap<T>::Iterator& rhs) {
-    assert(lhs.host_ == rhs.host_);
-    auto lhs_number =
-        static_cast<int>(lhs.curr_node_ ? GetElementNumber(lhs.curr_node_)
-                                        : lhs.host_->Size() + 1);
-    auto rhs_number =
-        static_cast<int>(rhs.curr_node_ ? GetElementNumber(rhs.curr_node_)
-                                        : rhs.host_->Size() + 1);
-    return lhs_number - rhs_number;
-  }
-  friend int operator-(const ImplicitTreap<T>::ConstIterator& lhs,
-                       const ImplicitTreap<T>::ConstIterator& rhs) {
-    assert(lhs.host_ == rhs.host_);
-    auto lhs_number =
-        static_cast<int>(lhs.curr_node_ ? GetElementNumber(lhs.curr_node_)
-                                        : lhs.host_->Size() + 1);
-    auto rhs_number =
-        static_cast<int>(rhs.curr_node_ ? GetElementNumber(rhs.curr_node_)
-                                        : rhs.host_->Size() + 1);
-    return lhs_number - rhs_number;
-  }
-  friend ConstIterator operator+(const ConstIterator& lhs, int shift) {
-    assert(lhs.host_);
-    if (!lhs.curr_node_) {
-      // We are trying to shift from end() iterator
-      assert(shift <= 0 && lhs.host_->size_ >= static_cast<size_t>(-shift));
-      return ConstIterator(
-          GetElement(lhs.host_->root_,
-                     lhs.host_->size_ - static_cast<size_t>(-shift) + 1),
-          lhs.host_);
-    }
-    return ConstIterator(ShiftNode(lhs.curr_node_, lhs.host_->root_, shift),
-                         lhs.host_);
-  }
-  friend Iterator operator+(const Iterator& lhs, int shift) {
-    assert(lhs.host_);
-    if (!lhs.curr_node_) {
-      // We are trying to shift from end() iterator
-      assert(shift <= 0 && lhs.host_->size_ >= static_cast<size_t>(-shift));
-      return Iterator(
-          GetElement(lhs.host_->root_,
-                     lhs.host_->size_ - static_cast<size_t>(-shift) + 1),
-          lhs.host_);
-    }
-    return Iterator(ShiftNode(lhs.curr_node_, lhs.host_->root_, shift),
-                    lhs.host_);
-  }
   /**
    * @brief Describes single element stored in the treap.
    */
@@ -967,7 +1010,7 @@ class ImplicitTreap {
       return GetElement(const_cast<Node*>(root),
                         curr_number - static_cast<size_t>(-shift));
     } else if (shift >= 0 &&
-               curr_number + static_cast<size_t>(shift) > root->tree_size) {
+               curr_number + static_cast<size_t>(shift) <= root->tree_size) {
       return GetElement(const_cast<Node*>(root),
                         curr_number + static_cast<size_t>(shift));
     } else {
