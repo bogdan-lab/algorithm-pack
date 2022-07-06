@@ -253,58 +253,117 @@ TEST(ImplicitTreapTest, EraseFromTheMiddle) {
   EXPECT_TRUE(test.Empty());
 }
 
-TEST(ImplicitTreapTest, RotatePositiveDirection) {
+TEST(ImplicitTreapTest, RotateFullVector) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
-  alpa::ImplicitTreap<int> test(input, /*seed=*/15);
-  for (int i = 1; i < static_cast<int>(input.size()); ++i) {
-    test.Rotate(i);
-    std::rotate(input.begin(), input.end() - i, input.end());
-    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
-                ElementsAreArray(input));
-  }
+  alpa::ImplicitTreap<int> treap(input, /*seed=*/15);
+  treap.Rotate(0, 1, treap.Size());
+  std::rotate(input.begin(), input.begin() + 1, input.end());
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  treap.Rotate(0, 4, treap.Size());
+  std::rotate(input.begin(), input.begin() + 4, input.end());
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  treap.Rotate(0, treap.Size() - 1, treap.Size());
+  std::rotate(input.begin(), input.end() - 1, input.end());
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
 }
 
-TEST(ImplicitTreapTest, RotateNegativeDirection) {
+TEST(ImplicitTreapTest, RotatePartOfTheVector) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
-  alpa::ImplicitTreap<int> test(input, /*seed=*/15);
-  for (int i = 1; i < static_cast<int>(input.size()); ++i) {
-    test.Rotate(-i);
-    std::rotate(input.begin(), input.begin() + i, input.end());
-    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
-                ElementsAreArray(input));
-  }
+  alpa::ImplicitTreap<int> treap(input, /*seed=*/15);
+  // Rotate in the beginning
+  treap.Rotate(0, 1, 4);
+  std::rotate(input.begin(), input.begin() + 1, input.begin() + 4);
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  treap.Rotate(0, 3, 4);
+  std::rotate(input.begin(), input.begin() + 3, input.begin() + 4);
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  treap.Rotate(0, 2, 4);
+  std::rotate(input.begin(), input.begin() + 2, input.begin() + 4);
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+
+  // Rotate in the middle
+  treap.Rotate(2, 3, 6);
+  std::rotate(input.begin() + 2, input.begin() + 3, input.begin() + 6);
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  treap.Rotate(2, 5, 6);
+  std::rotate(input.begin() + 2, input.begin() + 5, input.begin() + 6);
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  treap.Rotate(2, 4, 6);
+  std::rotate(input.begin() + 2, input.begin() + 4, input.begin() + 6);
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  // Rotate at the end
+  treap.Rotate(4, 5, treap.Size());
+  std::rotate(input.begin() + 4, input.begin() + 5, input.end());
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  treap.Rotate(4, 6, treap.Size());
+  std::rotate(input.begin() + 4, input.begin() + 6, input.end());
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  treap.Rotate(4, treap.Size() - 1, treap.Size());
+  std::rotate(input.begin() + 4, input.end() - 1, input.end());
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+
+  treap.Rotate(0, 4, treap.Size());
+  std::rotate(input.begin(), input.begin() + 4, input.end());
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  treap.Rotate(0, treap.Size() - 1, treap.Size());
+  std::rotate(input.begin(), input.end() - 1, input.end());
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
 }
 
-TEST(ImplicitTreapTest, RotateCountlargerThanSize) {
-  std::vector<int> input{1, 2, 3, 4};
-  {
-    alpa::ImplicitTreap<int> test(input, /*seed=*/15);
-    test.Rotate(5);
-    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
-                ElementsAre(4, 1, 2, 3));
+TEST(ImplicitTreapTest, RotateWithNoRotation) {
+  std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+  alpa::ImplicitTreap<int> treap(input, /*seed=*/42);
+  treap.Rotate(0, 0, treap.Size());
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  treap.Rotate(5, 5, treap.Size());
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  treap.Rotate(treap.Size() - 1, treap.Size() - 1, treap.Size());
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+  treap.Rotate(2, 2, 6);
+  EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+              ElementsAreArray(input));
+}
+
+TEST(ImplicitTreapTest, RotateCornerCases) {
+  {  // Rotate empty treap
+    alpa::ImplicitTreap<int> treap;
+    EXPECT_TRUE(treap.Empty());
+    EXPECT_EQ(treap.Size(), 0);
+    treap.Rotate(0, 0, 0);
+    EXPECT_TRUE(treap.Empty());
+    EXPECT_EQ(treap.Size(), 0);
   }
   {
-    alpa::ImplicitTreap<int> test(input, /*seed=*/15);
-    test.Rotate(7);
-    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
-                ElementsAre(2, 3, 4, 1));
-  }
-  {
-    alpa::ImplicitTreap<int> test(input, /*seed=*/15);
-    test.Rotate(-5);
-    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
-                ElementsAre(2, 3, 4, 1));
-  }
-  {
-    alpa::ImplicitTreap<int> test(input, /*seed=*/15);
-    test.Rotate(-7);
-    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
-                ElementsAre(4, 1, 2, 3));
-  }
-  {
-    alpa::ImplicitTreap<int> test(input, /*seed=*/15);
-    test.Rotate(0);
-    EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
+    std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    alpa::ImplicitTreap<int> treap(input, /*seed=*/42);
+    // Rotate empty subrange in the beginning
+    treap.Rotate(0, 0, 0);
+    EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+                ElementsAreArray(input));
+    // Rotate empty subrange in the middle
+    treap.Rotate(2, 2, 2);
+    EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
+                ElementsAreArray(input));
+    // Rotate empty subrange in the end
+    treap.Rotate(8, 8, 8);
+    EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
                 ElementsAreArray(input));
   }
 }
@@ -342,34 +401,18 @@ TEST(ImplicitTreapTest, IteratorInvalidationInsert) {
 
 TEST(ImplicitTreapTest, IteratorInvalidationRotate) {
   std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
-  {
-    alpa::ImplicitTreap<int> test(input, /*seed=*/15);
-    auto it = test.Begin();
-    auto cit = test.CBegin();
-    auto end = test.End();
-    auto cend = test.CEnd();
-    test.Rotate(2);
-    for (size_t i = 0; i < input.size() - 2; ++i) {
-      EXPECT_EQ(*it++, input[i]);
-      EXPECT_EQ(*cit++, input[i]);
-    }
-    EXPECT_EQ(it, end);
-    EXPECT_EQ(cit, cend);
+  alpa::ImplicitTreap<int> test(input, /*seed=*/15);
+  auto it = test.Begin();
+  auto cit = test.CBegin();
+  auto end = test.End();
+  auto cend = test.CEnd();
+  test.Rotate(0, test.Size() - 2, test.Size());
+  for (size_t i = 0; i < input.size() - 2; ++i) {
+    EXPECT_EQ(*it++, input[i]);
+    EXPECT_EQ(*cit++, input[i]);
   }
-  {
-    alpa::ImplicitTreap<int> test(input, /*seed=*/15);
-    auto it = test.Begin();
-    auto cit = test.CBegin();
-    auto end = test.End();
-    auto cend = test.CEnd();
-    test.Rotate(-2);
-    for (size_t i = 0; i < 2; ++i) {
-      EXPECT_EQ(*it++, input[i]);
-      EXPECT_EQ(*cit++, input[i]);
-    }
-    EXPECT_EQ(it, end);
-    EXPECT_EQ(cit, cend);
-  }
+  EXPECT_EQ(it, end);
+  EXPECT_EQ(cit, cend);
 }
 
 TEST(ImplicitTreapTest, IteratorInvalidationErase) {

@@ -692,33 +692,37 @@ class ImplicitTreap {
     return result;
   }
   /**
-   * @brief Performs cyclic rotation of the container on the given position
-   * number to the right.
+   * @brief Performes left rotation of the subset of the vector.
    *
-   * count sign defins the direction of the rotaiton:
-   * count = 1 results in [1, 2, 3, 4] -> [4, 1, 2, 3]
-   * count = -1 results in [1, 2, 3, 4] -> [2, 3, 4, 1]
-   * count = 0 - does nothing
+   * Specifically, after calling this method vector range defined by indexes
+   * [range_begin, range_end) will be rotate in the way that element with index
+   * new_begin will occur in the beginning of the range and element with index
+   * new_begin-1 will occur in its end. Complexity O(log n). Method does not
+   * invalidate any iterators.
    *
-   * Method does not invalidate any iterators.
-   * Method should not be called on the empty treap
-   * @param count - number of positions we need to rotate the container. We can
-   * have absolute value larger than treap size. Complexity O(log n).
+   * @param range_begin index of the first element in the rotated range
+   * @param new_begin index of the element which will occur in the beginning of
+   * the [range_begin, range_end) after its rotation
+   * @param range_end index of the end of the rotation range
    */
-  void Rotate(int count) {
-    if (count == 0) {
-      return;
-    } else if (count > 0) {
-      size_t normed_count = static_cast<size_t>(count) % size_;
-      if (!count) return;
-      std::pair<Node*, Node*> split = Split(size_ - normed_count + 1, root_);
-      root_ = Merge(split.second, split.first);
-    } else {
-      size_t normed_count = static_cast<size_t>(-count) % size_;
-      if (!count) return;
-      std::pair<Node*, Node*> split = Split(normed_count + 1, root_);
-      root_ = Merge(split.second, split.first);
-    }
+  void Rotate(size_t range_begin, size_t new_begin, size_t range_end) {
+    assert((range_begin < size_ || (range_begin == 0 && size_ == 0)) &&
+           range_end <= size_);
+    assert(range_begin <= new_begin &&
+           (new_begin < range_end ||
+            (new_begin == range_begin && new_begin == range_end)));
+    if (range_begin == range_end || Empty()) return;
+    std::pair<Node*, Node*> splitted_begin = Split(range_begin + 1, root_);
+    new_begin -= range_begin;
+    range_end -= range_begin;
+    std::pair<Node*, Node*> splitted_end =
+        Split(range_end + 1, splitted_begin.second);
+    // Rotate the middle part in the requested way
+    std::pair<Node*, Node*> rotation_split =
+        Split(new_begin + 1, splitted_end.first);
+    splitted_end.first = Merge(rotation_split.second, rotation_split.first);
+    root_ = Merge(splitted_begin.first,
+                  Merge(splitted_end.first, splitted_end.second));
   }
   /**
    * @brief Removes all elements from the treap, leaving it empty.
