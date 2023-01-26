@@ -26,7 +26,7 @@ project_options(
       # ENABLE_INTERPROCEDURAL_OPTIMIZATION
       # ENABLE_NATIVE_OPTIMIZATION
       # ENABLE_DOXYGEN
-       ENABLE_COVERAGE
+      # ENABLE_COVERAGE
       # ENABLE_SANITIZER_ADDRESS
       # ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
         #ENABLE_SANITIZER_THREAD
@@ -46,7 +46,7 @@ project_options(
 add_library(algo_pack INTERFACE)
 
 target_include_directories(algo_pack INTERFACE ${CMAKE_SOURCE_DIR}/include)
-target_link_libraries(algo_pack INTERFACE project_options project_warnings -coverage)
+target_link_libraries(algo_pack INTERFACE project_options project_warnings)
 target_compile_features(algo_pack INTERFACE cxx_std_17)
 
 option(ENABLE_TESTING "Enables test build for the project." ON)
