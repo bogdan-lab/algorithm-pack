@@ -13,13 +13,24 @@ message(STATUS "ProjectOptions directory = ${_project_options_SOURCE_DIR}")
 
 project(AlgorithmPack LANGUAGES CXX)
 
+set(ALPA_CPPCHECK_OPTIONS
+      # --template is set automatically inside project_options internals according to the generator
+      --enable=all 
+      --inconclusive 
+      --language=c++
+      # --std is set automatically inside project_options internals according to CMAKE_CXX_STANDARD value
+      --cppcheck-build-dir="${CMAKE_BINARY_DIR}/cppcheck"
+      --inline-suppr
+)
+
 
 # Initialize project_options variable related to this project
 # This overwrites `project_options` and sets `project_warnings`
 # uncomment to enable the options. Some of them accept one or more inputs:
 project_options(
       # ENABLE_CACHE
-      # ENABLE_CPPCHECK
+       ENABLE_CPPCHECK
+       CPPCHECK_OPTIONS ${ALPA_CPPCHECK_OPTIONS}
       # ENABLE_CLANG_TIDY
       # ENABLE_VS_ANALYSIS
       # ENABLE_CONAN
@@ -46,7 +57,7 @@ project_options(
 add_library(algo_pack INTERFACE)
 
 target_include_directories(algo_pack INTERFACE ${CMAKE_SOURCE_DIR}/include)
-target_link_libraries(algo_pack INTERFACE project_options project_warnings)
+target_link_libraries(algo_pack INTERFACE project_options)
 target_compile_features(algo_pack INTERFACE cxx_std_17)
 
 option(ENABLE_TESTING "Enables test build for the project." ON)
