@@ -16,20 +16,25 @@ target_link_libraries(unit_test_essentials INTERFACE algo_pack GTest::gtest_main
 
 target_link_libraries(unit_tests PRIVATE unit_test_essentials project_options project_warnings)
 
-add_library(coverage_options INTERFACE)
-# macro is defined in https://github.com/aminya/project_options internals
-enable_coverage(coverage_options)
 
-add_executable(coverage EXCLUDE_FROM_ALL ${ALPA_UNITTEST_FILES})
-target_link_libraries(coverage PRIVATE unit_test_essentials coverage_options)
-add_custom_command(TARGET coverage
-                   POST_BUILD
-                   COMMENT "Run all tests and capture coverage"
-                   COMMAND ./coverage
-                   COMMAND lcov -q --capture --directory . --output-file=all_coverage.info
-                   COMMAND lcov -q --extract all_coverage.info "${CMAKE_SOURCE_DIR}/*" --output-file=coverage.info
-                   COMMAND rm all_coverage.info
-                   COMMAND genhtml  coverage.info --output-directory=coverage_html
-                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                   # VERBATIM is required in order to correct lcov --extract command processing
-                   VERBATIM)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_library(coverage_options INTERFACE)
+    # macro is defined in https://github.com/aminya/project_options internals
+    enable_coverage(coverage_options)
+
+    add_executable(coverage EXCLUDE_FROM_ALL ${ALPA_UNITTEST_FILES})
+    target_link_libraries(coverage PRIVATE unit_test_essentials coverage_options)
+    add_custom_command(TARGET coverage
+                       POST_BUILD
+                       COMMENT "Run all tests and capture coverage"
+                       COMMAND ./coverage
+                       COMMAND lcov -q --capture --directory . --output-file=all_coverage.info
+                       COMMAND lcov -q --extract all_coverage.info "${CMAKE_SOURCE_DIR}/*" --output-file=coverage.info
+                       COMMAND rm all_coverage.info
+                       COMMAND genhtml  coverage.info --output-directory=coverage_html
+                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                       # VERBATIM is required in order to correct lcov --extract command processing
+                       VERBATIM)
+else()
+    message(STATUS "`coverage` target is valid only for Debug build. Otherwise target is excluded entirely.")
+endif()
