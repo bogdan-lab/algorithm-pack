@@ -29,10 +29,12 @@ set(ALPA_CPPCHECK_OPTIONS
 # uncomment to enable the options. Some of them accept one or more inputs:
 project_options(
       # ENABLE_CACHE
-       ENABLE_CPPCHECK
-       CPPCHECK_OPTIONS ${ALPA_CPPCHECK_OPTIONS}
-      # ENABLE_CLANG_TIDY
-      # ENABLE_VS_ANALYSIS
+       
+      #ENABLE_CPPCHECK
+       #CPPCHECK_OPTIONS ${ALPA_CPPCHECK_OPTIONS}
+       ENABLE_CLANG_TIDY
+      
+       # ENABLE_VS_ANALYSIS
       # ENABLE_CONAN
       # ENABLE_INTERPROCEDURAL_OPTIMIZATION
       # ENABLE_NATIVE_OPTIMIZATION
