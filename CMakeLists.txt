@@ -38,14 +38,19 @@ endif()
 # This overwrites `project_options` and sets `project_warnings`
 # uncomment to enable the options. Some of them accept one or more inputs:
 project_options(
-      ${ALPA_DEV_OPTIONS}
+      #${ALPA_DEV_OPTIONS}
       # ENABLE_DOXYGEN
       # ENABLE_SANITIZER_ADDRESS
       # ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
       # ENABLE_SANITIZER_MEMORY
       # WARNINGS_AS_ERRORS
-      # ENABLE_INCLUDE_WHAT_YOU_USE
+      ENABLE_INCLUDE_WHAT_YOU_USE
 )
+
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Utils.cmake)
+add_standard_include_pathes()
+
 
 # Warnings are set as interface library do not set it here in order to prevent
 # warning flag propagation to user targets

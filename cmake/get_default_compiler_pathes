@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+
+import argparse
+import subprocess
+import re
+
+
+def parse_includes(response: str) -> str:
+    res = []
+    lines = [el.strip() for el in response.split('\n')]
+    start_pattern = r"^#include [\"\<]\.\.\.[\"\>] search starts here:$"
+    end_pattern = r"^End of search list.$"
+    inside_search_list = False
+    for line in lines:
+        if re.match(start_pattern, line):
+            inside_search_list = True
+            continue
+        if re.match(end_pattern, line):
+            inside_search_list = False
+            continue
+        if inside_search_list:
+            res.append(line)
+    return ';'.join(res)
+
+
+def get_compiler_response(compiler_exec: str) -> str:
+    process = subprocess.Popen(f"echo | {compiler_exec} -E -Wp,-v -",
+                               shell=True, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    _, stderr = process.communicate()
+    return stderr.decode("utf-8")
+
+
+def main():
+    parser = argparse.ArgumentParser(prog="CompilerDefaultIncludeGetter",
+                                     description="Script will parse compiler output and "
+                                     "return list of default compiler pathes",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("compiler", action='store', type=str,
+                        help="Path to the compiler executable, which default pathes"
+                        "we are interested in.")
+    args = parser.parse_args()
+    print(parse_includes(get_compiler_response(args.compiler)), end="")
+
+
+if __name__ == "__main__":
+    main()
