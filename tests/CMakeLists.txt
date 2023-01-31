@@ -24,6 +24,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
     add_executable(coverage EXCLUDE_FROM_ALL ${ALPA_UNITTEST_FILES})
     target_link_libraries(coverage PRIVATE unit_test_essentials coverage_options)
+
+    if(ALPA_STATIC_ANALYSIS)
+        # macro is defined in https://github.com/aminya/project_options internals
+        target_disable_static_analysis(coverage)
+    endif()
+
     add_custom_command(TARGET coverage
                        POST_BUILD
                        COMMENT "Run all tests and capture coverage"
