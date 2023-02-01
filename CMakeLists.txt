@@ -44,12 +44,12 @@ project_options(
       # ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
       # ENABLE_SANITIZER_MEMORY
       # WARNINGS_AS_ERRORS
-      ENABLE_INCLUDE_WHAT_YOU_USE
+      # ENABLE_INCLUDE_WHAT_YOU_USE
 )
 
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Utils.cmake)
-add_standard_include_pathes()
+# add_standard_include_pathes()
 
 
 # Warnings are set as interface library do not set it here in order to prevent
