@@ -22,15 +22,3 @@ macro(add_standard_include_pathes)
     endif()
   endif()
 endmacro()
-
-
-
-macro(target_enable_include_what_you_use TARGET)
-  find_program(INCLUDE_WHAT_YOU_USE include-what-you-use)
-  if(INCLUDE_WHAT_YOU_USE)
-    set_target_properties(${TARGET} PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${INCLUDE_WHAT_YOU_USE})
-    add_standard_include_pathes()
-  else()
-    message(WARNING "include-what-you-use requested, but executable not found")
-  endif()
-endmacro()
