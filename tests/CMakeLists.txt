@@ -62,6 +62,8 @@ if(ALPA_STATIC_ANALYSIS)
     endforeach()
 
     # Accumulate other iwyu options
+    list(APPEND IWYU_COMMAND_LINE_ARGS 
+                    -Xiwyu --mapping_file=${CMAKE_CURRENT_SOURCE_DIR}/iwyu_mapping.imp)
     foreach(INCLUDE_PATH ${ALPA_INCLUDES})
         list(APPEND IWYU_COMMAND_LINE_ARGS  -Xiwyu --check_also=${INCLUDE_PATH}/*.h)
     endforeach()
