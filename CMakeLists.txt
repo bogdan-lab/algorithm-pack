@@ -32,19 +32,21 @@ if(ALPA_STATIC_ANALYSIS)
                     ENABLE_CLANG_TIDY)
 endif()
 
-
+option(ALPA_ENABLE_DOXYGEN_DOCS "Enables creation of doxygen-docs target in the build" ON)
+if(ALPA_ENABLE_DOXYGEN_DOCS)
+  list(APPEND ALPA_DEV_OPTIONS ENABLE_DOXYGEN)
+  set(DOXYGEN_EXCLUDE_PATTERNS "${CMAKE_CURRENT_SOURCE_DIR}/tests/*" "${CMAKE_CURRENT_BINARY_DIR}/*")
+endif()
 
 # Initialize project_options variable related to this project
 # This overwrites `project_options` and sets `project_warnings`
 # uncomment to enable the options. Some of them accept one or more inputs:
 project_options(
-      #${ALPA_DEV_OPTIONS}
-      # ENABLE_DOXYGEN
+      ${ALPA_DEV_OPTIONS}
       # ENABLE_SANITIZER_ADDRESS
       # ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
       # ENABLE_SANITIZER_MEMORY
       # WARNINGS_AS_ERRORS
-      # ENABLE_INCLUDE_WHAT_YOU_USE
 )
 
 
