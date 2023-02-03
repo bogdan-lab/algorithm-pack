@@ -14,7 +14,7 @@ find_package(GTest REQUIRED CONFIG)
 add_library(unit_test_essentials INTERFACE)
 target_link_libraries(unit_test_essentials INTERFACE algo_pack GTest::gtest_main GTest::gmock)
 
-target_link_libraries(unit_tests PRIVATE unit_test_essentials project_options)
+target_link_libraries(unit_tests PRIVATE unit_test_essentials project_options project_warnings)
 
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

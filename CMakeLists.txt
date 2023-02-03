@@ -38,6 +38,11 @@ if(ALPA_ENABLE_DOXYGEN_DOCS)
   set(DOXYGEN_EXCLUDE_PATTERNS "${CMAKE_CURRENT_SOURCE_DIR}/tests/*" "${CMAKE_CURRENT_BINARY_DIR}/*")
 endif()
 
+option(ALPA_WARNING_AS_ERRORS "Enables warning treatment as errors" ON)
+if(ALPA_WARNING_AS_ERRORS)
+  list(APPEND ALPA_DEV_OPTIONS WARNINGS_AS_ERRORS)
+endif()
+
 # Initialize project_options variable related to this project
 # This overwrites `project_options` and sets `project_warnings`
 # uncomment to enable the options. Some of them accept one or more inputs:
@@ -46,7 +51,6 @@ project_options(
       # ENABLE_SANITIZER_ADDRESS
       # ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
       # ENABLE_SANITIZER_MEMORY
-      # WARNINGS_AS_ERRORS
 )
 
 
