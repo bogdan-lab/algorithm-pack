@@ -1,3 +1,5 @@
+include_guard()
+
 # Macro which defines CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES
 # Ideally variable has to be defined by the system automatically, but it
 # is not happening. MAcros will use external python script and initialize pathes
@@ -22,3 +24,16 @@ macro(add_standard_include_pathes)
     endif()
   endif()
 endmacro()
+
+# Privately links sanitizeers and their options to the given target
+function(enable_asan_and_ubsan TARGET)
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+    list(APPEND SANITIZERS "address,undefined")
+    target_compile_options(${TARGET} PRIVATE -fsanitize=address,undefined 
+                                             -fno-sanitize-recover=all)
+    target_link_options(${TARGET} PRIVATE -fsanitize=address,undefined)
+  else()
+    message(STATUS "Currently build system does not support sanitizer option "
+             "for compiler ${CMAKE_CXX_COMPILER_ID}")
+  endif()
+endfunction()

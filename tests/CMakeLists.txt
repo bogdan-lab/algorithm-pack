@@ -16,7 +16,12 @@ target_link_libraries(unit_test_essentials INTERFACE algo_pack GTest::gtest_main
 
 target_link_libraries(unit_tests PRIVATE unit_test_essentials project_options project_warnings)
 
+option(ALPA_ENABLE_SANITIZERS "Enable UB and address sanitizers" ON)
+if(ALPA_ENABLE_SANITIZERS)
+  enable_asan_and_ubsan(unit_tests)
+endif()
 
+# coverage target description
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_library(coverage_options INTERFACE)
     # macro is defined in https://github.com/aminya/project_options internals
@@ -45,7 +50,7 @@ else()
     message(STATUS "`coverage` target is valid only for Debug build. Otherwise target is excluded entirely.")
 endif()
 
-
+# iwyu target description
 if(ALPA_STATIC_ANALYSIS)
     # Building INCLUDE WHAT YOU USE target
     add_custom_target(iwyu)

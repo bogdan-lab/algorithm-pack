@@ -46,23 +46,15 @@ endif()
 # Initialize project_options variable related to this project
 # This overwrites `project_options` and sets `project_warnings`
 # uncomment to enable the options. Some of them accept one or more inputs:
-project_options(
-      ${ALPA_DEV_OPTIONS}
-      # ENABLE_SANITIZER_ADDRESS
-      # ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
-      # ENABLE_SANITIZER_MEMORY
-)
+project_options(${ALPA_DEV_OPTIONS})
 
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Utils.cmake)
-# add_standard_include_pathes()
 
-
-# Warnings are set as interface library do not set it here in order to prevent
-# warning flag propagation to user targets
 add_library(algo_pack INTERFACE)
 
 target_include_directories(algo_pack INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 
 option(ALPA_ENABLE_TESTING "Enables test build for the project." ON)
 if(ALPA_ENABLE_TESTING)
