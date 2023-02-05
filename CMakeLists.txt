@@ -1,7 +1,11 @@
 ﻿cmake_minimum_required(VERSION 3.19)
 
+project(AlgorithmPack LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 
+################################
+### Loading required modules ###
+################################
 # Add project_options v0.26.3
 # https://github.com/aminya/project_options
 # Change the version in the following URL to update the package (watch the releases of the repository for future updates)
@@ -11,54 +15,29 @@ FetchContent_MakeAvailable(_project_options)
 include(${_project_options_SOURCE_DIR}/Index.cmake)
 message(STATUS "ProjectOptions directory = ${_project_options_SOURCE_DIR}")
 
-project(AlgorithmPack LANGUAGES CXX)
-
-# List which will accumulate all project options used during development
-set(ALPA_DEV_OPTOINS "")
-
-option(ALPA_STATIC_ANALYSIS "Enables static analisys tools (cppcheck and clang-tidy)" ON)
-
-if(ALPA_STATIC_ANALYSIS)
-  list(APPEND ALPA_DEV_OPTIONS 
-                    ENABLE_CPPCHECK
-                    CPPCHECK_OPTIONS 
-                        # --template is set automatically inside project_options internals according to the generator
-                        --enable=all 
-                        --inconclusive 
-                        --language=c++
-                        # --std is set automatically inside project_options internals according to CMAKE_CXX_STANDARD value
-                        --cppcheck-build-dir="${CMAKE_CURRENT_BINARY_DIR}/cppcheck"
-                        --inline-suppr
-                    ENABLE_CLANG_TIDY)
-endif()
-
-option(ALPA_ENABLE_DOXYGEN_DOCS "Enables creation of doxygen-docs target in the build" ON)
-if(ALPA_ENABLE_DOXYGEN_DOCS)
-  list(APPEND ALPA_DEV_OPTIONS ENABLE_DOXYGEN)
-  set(DOXYGEN_EXCLUDE_PATTERNS "${CMAKE_CURRENT_SOURCE_DIR}/tests/*" "${CMAKE_CURRENT_BINARY_DIR}/*")
-endif()
-
-option(ALPA_WARNING_AS_ERRORS "Enables warning treatment as errors" ON)
-if(ALPA_WARNING_AS_ERRORS)
-  list(APPEND ALPA_DEV_OPTIONS WARNINGS_AS_ERRORS)
-endif()
-
-# Initialize project_options variable related to this project
-# This overwrites `project_options` and sets `project_warnings`
-# uncomment to enable the options. Some of them accept one or more inputs:
-project_options(${ALPA_DEV_OPTIONS})
-
-
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Utils.cmake)
 
+######################
+### Library itself ###
+######################
 add_library(algo_pack INTERFACE)
-
 target_include_directories(algo_pack INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+################################
+### Documentation definition ###
+################################
+option(ALPA_ENABLE_DOXYGEN_DOCS "Enables creation of doxygen-docs target in the build" ON)
+if(ALPA_ENABLE_DOXYGEN_DOCS)
+  set(DOXYGEN_EXCLUDE_PATTERNS "${CMAKE_CURRENT_SOURCE_DIR}/tests/*" "${CMAKE_CURRENT_BINARY_DIR}/*")
+  # macro is defined in https://github.com/aminya/project_options internals
+  enable_doxygen("awesome-sidebar")
+endif()
 
+#####################################
+### Test environment subdirectory ###
+#####################################
 option(ALPA_ENABLE_TESTING "Enables test build for the project." ON)
 if(ALPA_ENABLE_TESTING)
-  message(STATUS "Building tests")
   enable_testing()
   add_subdirectory(tests)
 endif()

@@ -27,11 +27,15 @@ endmacro()
 
 # Privately links sanitizeers and their options to the given target
 function(enable_asan_and_ubsan TARGET)
+  set(CONNECTION_TYPE "PRIVATE")
+  get_target_property(TARGET_TYPE ${TARGET} TYPE)
+  if(${TARGET_TYPE} STREQUAL "INTERFACE_LIBRARY")
+    set(CONNECTION_TYPE "INTERFACE")
+  endif()
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-    list(APPEND SANITIZERS "address,undefined")
-    target_compile_options(${TARGET} PRIVATE -fsanitize=address,undefined 
+    target_compile_options(${TARGET} ${CONNECTION_TYPE} -fsanitize=address,undefined 
                                              -fno-sanitize-recover=all)
-    target_link_options(${TARGET} PRIVATE -fsanitize=address,undefined)
+    target_link_options(${TARGET} ${CONNECTION_TYPE} -fsanitize=address,undefined)
   else()
     message(STATUS "Currently build system does not support sanitizer option "
              "for compiler ${CMAKE_CXX_COMPILER_ID}")

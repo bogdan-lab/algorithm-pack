@@ -1,4 +1,45 @@
-﻿include(GoogleTest)
+﻿###################################################
+### Define project options for development mode ###
+###################################################
+set(ALPA_DEV_OPTOINS "")
+
+option(ALPA_STATIC_ANALYSIS "Enables static analisys tools (cppcheck and clang-tidy)" ON)
+if(ALPA_STATIC_ANALYSIS)
+  list(APPEND ALPA_DEV_OPTIONS 
+                    ENABLE_CPPCHECK
+                    CPPCHECK_OPTIONS 
+                        # --template is set automatically inside project_options internals according to the generator
+                        --enable=all 
+                        --inconclusive 
+                        --language=c++
+                        # --std is set automatically inside project_options internals according to CMAKE_CXX_STANDARD value
+                        --cppcheck-build-dir="${CMAKE_CURRENT_BINARY_DIR}/cppcheck"
+                        --inline-suppr
+                    ENABLE_CLANG_TIDY)
+endif()
+
+option(ALPA_WARNING_AS_ERRORS "Enables warning treatment as errors" ON)
+if(ALPA_WARNING_AS_ERRORS)
+  list(APPEND ALPA_DEV_OPTIONS WARNINGS_AS_ERRORS)
+endif()
+
+# Initialize project_options variable related to this project
+# This overwrites `project_options` and sets `project_warnings`
+project_options(${ALPA_DEV_OPTIONS})
+
+option(ALPA_ENABLE_SANITIZERS "Enable UB and address sanitizers" ON)
+if(ALPA_ENABLE_SANITIZERS)
+  enable_asan_and_ubsan(project_options)
+endif()
+
+##########################################
+### Actual unit test target definition ###
+##########################################
+include(GoogleTest)
+
+find_package(GTest REQUIRED CONFIG)
+add_library(unit_test_essentials INTERFACE)
+target_link_libraries(unit_test_essentials INTERFACE algo_pack GTest::gtest_main GTest::gmock)
 
 set(ALPA_UNITTEST_FILES 
     treap_tests.cpp
@@ -6,22 +47,12 @@ set(ALPA_UNITTEST_FILES
 )
 
 add_executable(unit_tests ${ALPA_UNITTEST_FILES})
-
 gtest_discover_tests(unit_tests)
-
-find_package(GTest REQUIRED CONFIG)
-
-add_library(unit_test_essentials INTERFACE)
-target_link_libraries(unit_test_essentials INTERFACE algo_pack GTest::gtest_main GTest::gmock)
-
 target_link_libraries(unit_tests PRIVATE unit_test_essentials project_options project_warnings)
 
-option(ALPA_ENABLE_SANITIZERS "Enable UB and address sanitizers" ON)
-if(ALPA_ENABLE_SANITIZERS)
-  enable_asan_and_ubsan(unit_tests)
-endif()
-
-# coverage target description
+##################################
+### Coverage target definition ###
+##################################
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_library(coverage_options INTERFACE)
     # macro is defined in https://github.com/aminya/project_options internals
@@ -50,7 +81,9 @@ else()
     message(STATUS "`coverage` target is valid only for Debug build. Otherwise target is excluded entirely.")
 endif()
 
-# iwyu target description
+##############################################
+### Include What You Use target definition ###
+##############################################
 if(ALPA_STATIC_ANALYSIS)
     # Building INCLUDE WHAT YOU USE target
     add_custom_target(iwyu)
