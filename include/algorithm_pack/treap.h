@@ -1,5 +1,5 @@
-﻿#ifndef INCLUDE_ALGORITHM_PACK_TREAP_H
-#define INCLUDE_ALGORITHM_PACK_TREAP_H
+﻿#ifndef ALGORITHM_PACK_TREAP_H
+#define ALGORITHM_PACK_TREAP_H
 
 #include <cassert>
 #include <cstddef>
@@ -32,7 +32,7 @@ class Treap {
    *
    * The seed is used in random generator for providing priorities.
    */
-  Treap(uint64_t seed) : rnd_(seed) {}
+  explicit Treap(uint64_t seed) : rnd_(seed) {}
   /**
    * @brief Destroy the Treap object by deleting each node.
    */
@@ -117,7 +117,7 @@ class Treap {
     }
     delete curr_ptr;
     --size_;
-    if (!size_) root_ = nullptr;
+    if (size_ == 0) root_ = nullptr;
     return true;
   }
   /**
@@ -145,11 +145,11 @@ class Treap {
    * @brief Checks whether the treap is empty or not.
    * @return true if the treap is empty, false otherwise.
    */
-  bool Empty() const { return root_ == nullptr; }
+  [[nodiscard]] bool Empty() const { return root_ == nullptr; }
   /**
    * @brief Gets the number of elements in the treap.
    */
-  size_t Size() const { return size_; }
+  [[nodiscard]] size_t Size() const { return size_; }
 
  private:
   /**
@@ -159,11 +159,12 @@ class Treap {
     /**
      * @brief Construct a new Node object with given parameters
      *
-     * @param k node key
-     * @param v node value
-     * @param p node priority
+     * @param g_key node key
+     * @param g_val node value
+     * @param g_priority node priority
      */
-    Node(const K& k, const V& v, uint64_t p) : item(k, v), priority(p) {}
+    Node(const K& g_key, const V& g_val, uint64_t g_priority)
+        : item(g_key, g_val), priority(g_priority) {}
 
     std::pair<const K, V> item;
     uint64_t priority = 0;
@@ -269,4 +270,4 @@ class Treap {
   size_t size_ = 0;
 };
 }  // namespace alpa
-#endif  // INCLUDE_ALGORITHM_PACK_TREAP_H
+#endif  // ALGORITHM_PACK_TREAP_H
