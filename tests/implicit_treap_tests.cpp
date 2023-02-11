@@ -2,6 +2,11 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <cstddef>
+#include <iterator>
+#include <numeric>
+#include <random>
+#include <string>
 #include <utility>
 #include <vector>
 

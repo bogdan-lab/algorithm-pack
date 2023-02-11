@@ -1,10 +1,14 @@
 ﻿#ifndef INCLUDE_ALGORITHM_PACK_IMPLICIT_TREAP_H
 #define INCLUDE_ALGORITHM_PACK_IMPLICIT_TREAP_H
 
+#include <algorithm>
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <random>
 #include <utility>
+#include <vector>
 
 namespace alpa {
 /**

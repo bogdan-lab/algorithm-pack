@@ -2,6 +2,8 @@
 #define INCLUDE_ALGORITHM_PACK_TREAP_H
 
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <random>
 #include <utility>
 
