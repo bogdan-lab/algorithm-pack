@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -21,11 +22,11 @@ TEST(TreapTest, CreateEmpty) {
 }
 
 TEST(TreapTest, CreateAndFill) {
-  std::vector<int> input{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  alpa::Treap<int, int> test(/*seed=*/42);
-  for (size_t i = 0; i < input.size(); ++i) {
-    int input_val = input[i] * input[i];
-    int* val = test.Insert(input[i], input_val);
+  constexpr std::array<int, 11> kInput{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  alpa::Treap<int, int> test(/*seed=*/kInput.size());
+  for (size_t i = 0; i < kInput.size(); ++i) {
+    int input_val = kInput[i] * kInput[i];
+    int* val = test.Insert(kInput[i], input_val);
     ASSERT_THAT(val, NotNull());
     EXPECT_EQ(*val, input_val);
     EXPECT_EQ(test.Size(), i + 1);
@@ -34,15 +35,16 @@ TEST(TreapTest, CreateAndFill) {
 
 TEST(TreapTest, FindInEmpty) {
   alpa::Treap<int, std::string> test;
-  std::string* res = test.Find(5);
+  std::string* res = test.Find(1);
   EXPECT_THAT(res, IsNull());
 }
 
 TEST(TreapTest, FindExisting) {
-  std::vector<uint32_t> input{0, 1, 2, 3, 4, 5, 6};
+  constexpr std::array<uint32_t, 7> kInput{0, 1, 2, 3, 4, 5, 6};
+  auto input = kInput;
   std::vector<std::string> vals(input.size());
   std::transform(input.begin(), input.end(), vals.begin(),
-                 [](uint32_t el) { return std::to_string(el); });
+                 [](uint32_t val) { return std::to_string(val); });
   do {
     std::next_permutation(vals.begin(), vals.end());
     alpa::Treap<uint32_t, std::string> test(/*seed=*/input.front());
@@ -60,8 +62,9 @@ TEST(TreapTest, FindExisting) {
 }
 
 TEST(TreapTest, FindNotExisting) {
-  std::vector<uint32_t> input{2, 4, 6, 8, 10, 12, 14};
-  std::vector<uint32_t> checks{1, 3, 5, 7, 9, 11, 13, 15};
+  constexpr std::array<uint32_t, 7> kInput{2, 4, 6, 8, 10, 12, 14};
+  constexpr std::array<uint32_t, 8> kChecks{1, 3, 5, 7, 9, 11, 13, 15};
+  auto input = kInput;
   std::vector<std::string> vals{"a", "b", "c", "d", "e", "f", "g"};
   do {
     std::next_permutation(vals.begin(), vals.end());
@@ -71,14 +74,15 @@ TEST(TreapTest, FindNotExisting) {
       ASSERT_THAT(res, NotNull());
       EXPECT_EQ(*res, vals[i]);
     }
-    for (const auto& el : checks) {
-      EXPECT_THAT(test.Find(el), IsNull());
+    for (const auto& key : kChecks) {
+      EXPECT_THAT(test.Find(key), IsNull());
     }
   } while (std::next_permutation(input.begin(), input.end()));
 }
 
 TEST(TreapTest, InsertAndModifyNewValue) {
-  std::vector<uint32_t> input{0, 2, 4, 6, 8, 10, 12};
+  constexpr std::array<uint32_t, 7> kInput{0, 2, 4, 6, 8, 10, 12};
+  auto input = kInput;
   std::vector<std::string> vals{"a", "b", "c", "d", "e", "f", "g"};
   do {
     std::next_permutation(vals.begin(), vals.end());
@@ -98,9 +102,10 @@ TEST(TreapTest, InsertAndModifyNewValue) {
 }
 
 TEST(TreapTest, InsertAndModifyOldValue) {
-  std::vector<int> input{0, 2, 4, 6, 8, 10, 12};
+  constexpr std::array<int, 7> kInput{0, 2, 4, 6, 8, 10, 12};
+  auto input = kInput;
   std::vector<std::string> vals{"a", "b", "c", "d", "e", "f", "g"};
-  alpa::Treap<int, std::string> test(/*seed=*/29);
+  alpa::Treap<int, std::string> test(/*seed=*/kInput.size());
   for (size_t i = 0; i < input.size(); ++i) {
     test.Insert(input[i], vals[i]);
   }
@@ -115,8 +120,8 @@ TEST(TreapTest, InsertAndModifyOldValue) {
       EXPECT_THAT(*val_ptr, Not(IsEmpty()));
       *val_ptr = curr_val;
     }
-    for (size_t i = 0; i < input.size(); ++i) {
-      std::string* res = test.Find(input[i]);
+    for (const auto& val : input) {
+      std::string* res = test.Find(val);
       ASSERT_THAT(res, NotNull());
       EXPECT_EQ(*res, curr_val);
     }
@@ -137,17 +142,18 @@ TEST(TreapTest, EraseFromEmpty) {
 }
 
 TEST(TreapTest, EraseAllExisting) {
-  std::vector<int> input{0, 1, 2, 3, 4, 5, 6};
-  std::vector<int> check = input;
+  constexpr std::array<int, 7> kInput{0, 1, 2, 3, 4, 5, 6};
+  constexpr std::array<int, 7> kCheck = kInput;
+  auto input = kInput;
   do {
-    alpa::Treap<int, int> test(/*seed=*/25);
-    for (size_t i = 0; i < input.size(); ++i) {
+    alpa::Treap<int, int> test(/*seed=*/static_cast<uint64_t>(input.back()));
+    for (size_t i = 0; i < kInput.size(); ++i) {
       test.Insert(input[i], input[i] * input[i]);
     }
     size_t curr_size = input.size();
     EXPECT_EQ(test.Size(), curr_size);
-    for (const auto& el : check) {
-      EXPECT_TRUE(test.Erase(el));
+    for (const auto& val : kCheck) {
+      EXPECT_TRUE(test.Erase(val));
       EXPECT_EQ(test.Size(), --curr_size);
     }
     EXPECT_TRUE(test.Empty());
@@ -155,15 +161,16 @@ TEST(TreapTest, EraseAllExisting) {
 }
 
 TEST(TreapTest, EraseNotExisting) {
-  std::vector<int> input{0, 2, 4, 6, 8, 10, 12};
-  std::vector<int> check{-1, 1, 3, 5, 7, 9, 11, 13};
+  constexpr std::array<int, 7> kInput{0, 2, 4, 6, 8, 10, 12};
+  constexpr std::array<int, 8> kCheck{-1, 1, 3, 5, 7, 9, 11, 13};
+  auto input = kInput;
   do {
-    alpa::Treap<int, int> test(/*seed=*/25);
-    for (size_t i = 0; i < input.size(); ++i) {
-      test.Insert(input[i], input[i] * input[i]);
+    alpa::Treap<int, int> test(/*seed=*/static_cast<uint64_t>(input.back()));
+    for (const auto& val : input) {
+      test.Insert(val, val * val);
     }
-    for (const auto& el : check) {
-      EXPECT_FALSE(test.Erase(el));
+    for (const auto& val : kCheck) {
+      EXPECT_FALSE(test.Erase(val));
       EXPECT_EQ(test.Size(), input.size());
     }
   } while (std::next_permutation(input.begin(), input.end()));

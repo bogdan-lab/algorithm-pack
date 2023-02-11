@@ -12,6 +12,7 @@ Checks: |
   -hicpp-braces-around-statements,
   -cppcoreguidelines-avoid-magic-numbers,
   -hicpp-invalid-access-moved,
+  -cppcoreguidelines-pro-bounds-constant-array-index
 
 CheckOptions:
   - key: readability-braces-around-statements.ShortStatementLines
