@@ -1,5 +1,5 @@
-﻿#ifndef INCLUDE_ALGORITHM_PACK_IMPLICIT_TREAP_H
-#define INCLUDE_ALGORITHM_PACK_IMPLICIT_TREAP_H
+﻿#ifndef ALGORITHM_PACK_IMPLICIT_TREAP_H
+#define ALGORITHM_PACK_IMPLICIT_TREAP_H
 
 #include <algorithm>
 #include <cassert>
@@ -465,7 +465,7 @@ class ImplicitTreap {
    * @brief Creates an empty treap with the given seed set in the random
    * generator
    */
-  ImplicitTreap(uint64_t seed) : rnd_(seed) {}
+  explicit ImplicitTreap(uint64_t seed) : rnd_(seed) {}
   /**
    * @brief Construct a new Implicit Treap object by moving data from other.
    * Complexity O(1).
@@ -537,10 +537,10 @@ class ImplicitTreap {
     if (input.empty()) return;
     size_ = input.size();
     auto it = input.begin();
-    root_ = new Node(*it++, /*priority=*/rnd_());
+    root_ = new Node(*it++, /*g_priority=*/rnd_());
     Node* last_included = root_;
     while (it != input.end()) {
-      Node* new_node = new Node(*it++, /*priority=*/rnd_());
+      Node* new_node = new Node(*it++, /*g_priority=*/rnd_());
       while (last_included && last_included->priority < new_node->priority) {
         last_included = last_included->parent;
       }
@@ -592,9 +592,9 @@ class ImplicitTreap {
    */
   void SetSeed(uint64_t seed) { rnd_.seed(seed); }
   /**@brief Returns true if the container is empty*/
-  bool Empty() const { return !root_; }
+  [[nodiscard]] bool Empty() const { return !root_; }
   /**@brief Gets the number of elements in the container.*/
-  size_t Size() const { return size_; }
+  [[nodiscard]] size_t Size() const { return size_; }
   /**
    * @brief Inserts the given value into given position by copying it.
    * Complexity O(log n). Does not ivalidate iterators.
@@ -607,9 +607,8 @@ class ImplicitTreap {
    */
   T& Insert(const T& value, size_t pos) {
     ++size_;
-    Node* new_node = new Node(value, /*priority=*/rnd_());
-    auto [left, right] =
-        Split(/*element_number=*/std::min(size_, pos) + 1, root_);
+    Node* new_node = new Node(value, /*g_priority=*/rnd_());
+    auto [left, right] = Split(/*el_number=*/std::min(size_, pos) + 1, root_);
     root_ = Merge(Merge(left, new_node), right);
     return new_node->value;
   }
@@ -739,11 +738,13 @@ class ImplicitTreap {
   /**
    * @brief Gets begin iterator of the container. Complexity O(log n).
    */
-  Iterator Begin() { return Iterator{FindFirstNode(root_), this}; }
+  [[nodiscard]] Iterator Begin() {
+    return Iterator{FindFirstNode(root_), this};
+  }
   /**
    * @overload
    */
-  ConstIterator Begin() const {
+  [[nodiscard]] ConstIterator Begin() const {
     return ConstIterator{FindFirstNode(root_), this};
   }
   /**
@@ -751,30 +752,35 @@ class ImplicitTreap {
    *
    * @return ConstIterator
    */
-  ConstIterator CBegin() const {
+  [[nodiscard]] ConstIterator CBegin() const {
     return ConstIterator{FindFirstNode(root_), this};
   }
   /**
    * @brief Gets past the end iterator of the container. Complexity constant.
    */
-  Iterator End() { return Iterator{nullptr, this}; }
+  [[nodiscard]] Iterator End() { return Iterator{nullptr, this}; }
   /**
    * @overload
    */
-  ConstIterator End() const { return ConstIterator{nullptr, this}; }
+  [[nodiscard]] ConstIterator End() const {
+    return ConstIterator{nullptr, this};
+  }
   /**
    * @brief Gets ConstantIterator to the container. Complexity constant.
    *
    * @return ConstIterator
    */
-  ConstIterator CEnd() const { return ConstIterator{nullptr, this}; }
+  [[nodiscard]] ConstIterator CEnd() const {
+    return ConstIterator{nullptr, this};
+  }
 
  private:
   /**
    * @brief Describes single element stored in the treap.
    */
   struct Node {
-    Node(const T& val, uint64_t p) : priority(p), value(val) {}
+    Node(const T& val, uint64_t g_priority)
+        : priority(g_priority), value(val) {}
     Node* left = nullptr;
     Node* right = nullptr;
     Node* parent = nullptr;
@@ -996,11 +1002,11 @@ class ImplicitTreap {
     size_t curr_el_number = GetTreeSize(root->left) + 1;
     if (el_number < curr_el_number) {
       return GetElement(root->left, el_number);
-    } else if (el_number > curr_el_number) {
-      return GetElement(root->right, el_number - curr_el_number);
-    } else {
-      return root;
     }
+    if (el_number > curr_el_number) {
+      return GetElement(root->right, el_number - curr_el_number);
+    }
+    return root;
   }
   /**
    * @brief Shifts current node to another valid node in the tree.
@@ -1017,13 +1023,13 @@ class ImplicitTreap {
     if (shift < 0 && curr_number > static_cast<size_t>(-shift)) {
       return GetElement(const_cast<Node*>(root),
                         curr_number - static_cast<size_t>(-shift));
-    } else if (shift >= 0 &&
-               curr_number + static_cast<size_t>(shift) <= root->tree_size) {
+    }
+    if (shift >= 0 &&
+        curr_number + static_cast<size_t>(shift) <= root->tree_size) {
       return GetElement(const_cast<Node*>(root),
                         curr_number + static_cast<size_t>(shift));
-    } else {
-      return nullptr;
     }
+    return nullptr;
   }
   /**
    * @brief Calculates the element number which corresponds to the given node.
@@ -1055,4 +1061,4 @@ class ImplicitTreap {
 
 }  // namespace alpa
 
-#endif  // INCLUDE_ALGORITHM_PACK_IMPLICIT_TREAP_H
+#endif  // ALGORITHM_PACK_IMPLICIT_TREAP_H

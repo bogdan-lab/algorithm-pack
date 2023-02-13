@@ -61,14 +61,12 @@ CheckOptions:
     value: lower_case
   - key: readability-identifier-naming.ParameterCase
     value: lower_case
-  - key: readability-identifier-naming.TypeAliasCase
-    value: CamelCase
-  - key: readability-identifier-naming.TypedefCase
-    value: CamelCase
   - key: readability-identifier-naming.VariableCase
     value: lower_case
   - key: readability-identifier-naming.IgnoreMainLikeFunctions
     value: 1
+  - key: readability-identifier-length.MinimumVariableNameLength
+    value: 2
 
 WarningsAsErrors: ""
 HeaderFilterRegex: 'algorithm_pack/.+\.h'
