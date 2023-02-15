@@ -15,6 +15,10 @@
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 
+// Function is no-op and is provided in order to silence use-after-move warning
+template <typename T>
+void IsInitialized(T& /*unused*/) {}
+
 TEST(ImplicitTreapTest, CreateEmpty) {
   alpa::ImplicitTreap<int> test;
   EXPECT_TRUE(test.Empty());
@@ -154,7 +158,8 @@ TEST(ImplicitTreapTest, Constructor4) {
   // Move assignment to itself
   const std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
   alpa::ImplicitTreap<int> test(input, /*seed=*/input.size());
-  test = std::move(test);
+  test = std::move(test);  // NOLINT
+  IsInitialized(test);
   EXPECT_EQ(test.Size(), input.size());
   EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
               ElementsAreArray(input));
@@ -164,6 +169,7 @@ TEST(ImplicitTreapTest, Constructors5) {
   alpa::ImplicitTreap<int> empty;
   alpa::ImplicitTreap<int> test(empty);
   EXPECT_TRUE(test.Empty());
+  (void)test;  // Silencing warnings about not using test
   const std::vector<int> input{1, 2, 3, 4, 5};
   alpa::ImplicitTreap<int> test2(input, /*seed=*/input.size());
   test2 = empty;
@@ -198,7 +204,7 @@ TEST(ImplicitTreapTest, Constructor8) {
   // Copy assignment to itself
   const std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
   alpa::ImplicitTreap<int> test(input, /*seed=*/input.size());
-  test = test;
+  test = test;  // NOLINT
   EXPECT_EQ(test.Size(), input.size());
   EXPECT_THAT(std::vector<int>(test.Begin(), test.End()),
               ElementsAreArray(input));
@@ -392,8 +398,7 @@ TEST(ImplicitTreapTest, RotatePartOfTheVector) {
 }
 
 TEST(ImplicitTreapTest, RotateWithNoRotation) {
-  const std::vector<int> data{1, 2, 3, 4, 5, 6, 7, 8, 9};
-  auto input = data;
+  const std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
   alpa::ImplicitTreap<int> treap(input, /*seed=*/input.size());
   treap.Rotate(0, 0, treap.Size());
   EXPECT_THAT(std::vector<int>(treap.Begin(), treap.End()),
@@ -677,7 +682,7 @@ TEST(ImplicitTreapTest, RandomAccessIteratorShifts2) {
   std::vector<int> input(kInputSize);
   std::iota(input.begin(), input.end(), 0);
   alpa::ImplicitTreap<int> test(input, /*seed=*/kInputSize);
-  std::mt19937 rnd(kInputSize);
+  std::mt19937 rnd(input.size());
   std::uniform_int_distribution<int> dist(0,
                                           static_cast<int>(input.size()) - 1);
   constexpr int kCount = 500;
@@ -699,7 +704,7 @@ TEST(ImplicitTreapTest, RandomAccessIteratorDifference) {
   std::vector<int> input(kInputSize);
   std::iota(input.begin(), input.end(), 0);
   alpa::ImplicitTreap<int> test(input, /*seed=*/kInputSize);
-  std::mt19937 rnd(kInputSize);
+  std::mt19937 rnd(input.size());
   std::uniform_int_distribution<int> dist(0,
                                           static_cast<int>(input.size()) - 1);
   constexpr int kCount = 500;
@@ -882,6 +887,7 @@ TEST(ImplicitTreapTest, ClearTest) {
   test.Insert(input.front(), /*pos=*/0);
   test.Insert(input.back(), /*pos=*/0);
   alpa::ImplicitTreap<int> dest(std::move(test));
+  IsInitialized(test);
   test.Clear();
   EXPECT_EQ(test.Size(), 0);
   EXPECT_TRUE(test.Empty());
