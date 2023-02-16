@@ -4,7 +4,7 @@
     {include: ['@"gmock/.*"', "private", '"gmock/gmock.h"', "public"]},
     {include: ['@<gmock/.*>', "private", '<gmock/gmock.h>', "public"]},
     
-    # HACK: iwyu suggests <ext/alloc_traits.h> and <memory> each time vector[] is used.
+    # HACK: include-what-you-use suggests <ext/alloc_traits.h> and <memory> each time vector[] is used.
     # https://github.com/include-what-you-use/include-what-you-use/issues/166
     { include: [ '<ext/alloc_traits.h>', "private", '<vector>', "public" ] },
 ]

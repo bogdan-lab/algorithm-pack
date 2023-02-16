@@ -108,12 +108,12 @@ TEST(ImplicitTreapTest, IteratorWalk3) {
   const std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
   alpa::ImplicitTreap<int> test(input, /*seed=*/input.size());
   alpa::ImplicitTreap<int>::Iterator last = --test.End();
-  alpa::ImplicitTreap<int>::ConstIterator clast = --test.CEnd();
+  alpa::ImplicitTreap<int>::ConstIterator c_last = --test.CEnd();
   for (auto it = input.rbegin(); it != input.rend(); ++it) {
     EXPECT_EQ(*it, *last);
-    EXPECT_EQ(*last, *clast);
+    EXPECT_EQ(*last, *c_last);
     --last;
-    --clast;
+    --c_last;
   }
 }
 
@@ -121,10 +121,10 @@ TEST(ImplicitTreapTest, IteratorWalk4) {
   const std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
   alpa::ImplicitTreap<int> test(input, /*seed=*/input.size());
   alpa::ImplicitTreap<int>::Iterator last = --test.End();
-  alpa::ImplicitTreap<int>::ConstIterator clast = --test.CEnd();
+  alpa::ImplicitTreap<int>::ConstIterator c_last = --test.CEnd();
   for (auto it = input.rbegin(); it != input.rend(); ++it) {
     EXPECT_EQ(*it, *last);
-    EXPECT_EQ(*last--, *clast--);
+    EXPECT_EQ(*last--, *c_last--);
   }
 }
 
@@ -215,10 +215,10 @@ TEST(ImplicitTreapTest, Constructor8) {
 TEST(ImplicitTreapTest, ElementAccess1) {
   const std::vector<uint32_t> input{1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
   alpa::ImplicitTreap<uint32_t> test(input, /*seed=*/input.front());
-  const alpa::ImplicitTreap<uint32_t> ctest(input, /*seed=*/input.back());
+  const alpa::ImplicitTreap<uint32_t> c_test(input, /*seed=*/input.back());
   for (size_t i = 0; i < input.size(); ++i) {
     EXPECT_EQ(test[i], input[i]);
-    EXPECT_EQ(ctest[i], input[i]);
+    EXPECT_EQ(c_test[i], input[i]);
   }
 }
 
@@ -464,8 +464,8 @@ TEST(ImplicitTreapTest, IteratorInvalidationInsert) {
     } else {
       auto prev = iterators.back();
       iterators.push_back(++prev);
-      auto cprev = const_iterators.back();
-      const_iterators.push_back(++cprev);
+      auto c_prev = const_iterators.back();
+      const_iterators.push_back(++c_prev);
     }
   }
   for (size_t i = 0; i < input.size(); ++i) {
@@ -473,9 +473,9 @@ TEST(ImplicitTreapTest, IteratorInvalidationInsert) {
     EXPECT_EQ(input[i], *const_iterators[i]);
   }
   auto res_end = iterators.back();
-  auto cres_end = const_iterators.back();
+  auto c_res_end = const_iterators.back();
   EXPECT_EQ(++res_end, end);
-  EXPECT_EQ(++cres_end, cend);
+  EXPECT_EQ(++c_res_end, cend);
 }
 
 TEST(ImplicitTreapTest, IteratorInvalidationRotate) {
@@ -857,8 +857,8 @@ TEST(ImplicitTreapTest, StlMethodCalls) {
   alpa::ImplicitTreap<int> test(input, /*seed=*/input.size());
   std::vector<int> result(test.Begin(), test.End());
   EXPECT_THAT(result, ElementsAreArray(input));
-  std::vector<int> cresult(test.CBegin(), test.CEnd());
-  EXPECT_THAT(cresult, ElementsAreArray(input));
+  std::vector<int> c_result(test.CBegin(), test.CEnd());
+  EXPECT_THAT(c_result, ElementsAreArray(input));
   auto cit = std::lower_bound(test.CBegin(), test.CEnd(), kSearchVal);
   auto it = std::lower_bound(test.Begin(), test.End(), kSearchVal);
   ASSERT_NE(cit, test.CEnd());

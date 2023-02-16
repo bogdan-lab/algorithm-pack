@@ -92,7 +92,7 @@ class Treap {
    * If there is no key equivalent to the given one the treap will not be
    * changed. Complexity O(log n).
    *
-   * @param key the key which is inteded to be removed from the treap
+   * @param key the key which is intended to be removed from the treap
    *
    * @return true if the equivalent key was found in the treap and it was
    * deleted, false otherwise.
@@ -213,7 +213,7 @@ class Treap {
    *
    * @param key key according to which split will be performed. Does not
    * required to be in the treap.
-   * @param root root of the treap which is inteded to be splitted. Can be
+   * @param root root of the treap which is intended to be splitted. Can be
    * nullptr.
    *
    * @return two treap roots. The first treap in the result contains

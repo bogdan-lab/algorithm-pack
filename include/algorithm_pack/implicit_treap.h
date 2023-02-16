@@ -83,11 +83,11 @@ class ImplicitTreap {
       return ConstIterator::Advance(lhs, -shift);
     }
     /**
-     * @brief Returns the number of elelements between two iterators
+     * @brief Returns the number of elements between two iterators
      *
      * @param rhs the second iterator
      * @return int number of elements between two iterators, can be negative if
-     * the rhs iterator preceedes this iterator.
+     * the rhs iterator precedes this iterator.
      */
     friend difference_type operator-(const ConstIterator& lhs,
                                      const ConstIterator& rhs) {
@@ -187,7 +187,7 @@ class ImplicitTreap {
    private:
     /**
      * @brief Returns the distance in elements from the lhs iterator to the rhs.
-     * This is, performes lhs - rhs. Complexity O(log n).
+     * This is, performs lhs - rhs. Complexity O(log n).
      *
      * @param lhs end point
      * @param rhs start point
@@ -209,7 +209,7 @@ class ImplicitTreap {
      * positions from the current one. Complexity O(log n).
      * @warning Method should not be called on an empty iterator.
      * @param shift number of positions one need to shift current iterator in
-     * order to recieve desired one. Can be negative, but the shifted iterator
+     * order to receive desired one. Can be negative, but the shifted iterator
      * has to be in the range of the container, this is in the [Begin, End).
      * @return ConstIterator the shifted iterator.
      */
@@ -280,11 +280,11 @@ class ImplicitTreap {
       return Iterator::Advance(rhs, shift);
     }
     /**
-     * @brief Returns the number of elelements between two iterators
+     * @brief Returns the number of elements between two iterators
      *
      * @param rhs the second iterator
      * @return int number of elements between two iterators, can be negative if
-     * the rhs iterator preceedes this iterator.
+     * the rhs iterator precedes this iterator.
      */
     friend difference_type operator-(const Iterator& lhs, const Iterator& rhs) {
       return Iterator::Distance(lhs, rhs);
@@ -406,7 +406,7 @@ class ImplicitTreap {
    private:
     /**
      * @brief Returns the distance in elements from the lhs iterator to the rhs.
-     * This is, performes lhs - rhs. Complexity O(log n).
+     * This is, performs lhs - rhs. Complexity O(log n).
      *
      * @param lhs end point
      * @param rhs start point
@@ -428,7 +428,7 @@ class ImplicitTreap {
      * positions from the current one. Complexity O(log n).
      * @warning Method should not be called on an empty iterator.
      * @param shift number of positions one need to shift current iterator in
-     * order to recieve desired one. Can be negative, but the shifted iterator
+     * order to receive desired one. Can be negative, but the shifted iterator
      * has to be in the range of the container, this is in the [Begin, End).
      * @return Iterator the shifted iterator.
      */
@@ -599,7 +599,7 @@ class ImplicitTreap {
   [[nodiscard]] size_t Size() const { return size_; }
   /**
    * @brief Inserts the given value into given position by copying it.
-   * Complexity O(log n). Does not ivalidate iterators.
+   * Complexity O(log n). Does not invalidate iterators.
    *
    * @param value - actual value which needs to be placed into the treap.
    * @param pos - position where the new element should be inserted. If the
@@ -668,14 +668,14 @@ class ImplicitTreap {
    * @brief Extracts from the treap elements in the interval [start_pos,
    * end_pos).
    *
-   * Element position numerationt starts from 0. The given range should
+   * Element position numeration starts from 0. The given range should
    * be valid, this is end_pos >= start_pos and end_pos <= treap size.
    * Complexity O(log n). Does not invalidate iterators.
    *
    * @param start_pos index of the first element which will be extracted.
    * @param end_pos index pass the last element in the extracting range.
    * @return ImplicitTreap treap which contains all extracted elements in the
-   * preservedd order.
+   * preserved order.
    */
   ImplicitTreap Extract(size_t start_pos, size_t end_pos) {
     assert(end_pos >= start_pos);
@@ -697,7 +697,7 @@ class ImplicitTreap {
     return result;
   }
   /**
-   * @brief Performes left rotation of the subset of the vector.
+   * @brief Performs left rotation of the subset of the vector.
    *
    * Specifically, after calling this method vector range defined by indexes
    * [range_begin, range_end) will be rotate in the way that element with index
@@ -750,7 +750,7 @@ class ImplicitTreap {
     return ConstIterator{FindFirstNode(root_), this};
   }
   /**
-   * @brief Gets ContantIterator to the container. Complexity O(log n);
+   * @brief Gets ConstantIterator to the container. Complexity O(log n);
    *
    * @return ConstIterator
    */
@@ -822,7 +822,7 @@ class ImplicitTreap {
    *
    * Merge will be performed in the manner, that all elements which was in the
    * left tree will precede all elements in the right tree in case of container
-   * traversion.  No elements are copied. Method only rearranges pointers.
+   * traversal.  No elements are copied. Method only rearranges pointers.
    * Complexity O(log n)
    *
    * @param lhs - root of the left treap

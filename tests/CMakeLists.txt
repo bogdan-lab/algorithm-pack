@@ -1,9 +1,9 @@
 ﻿###################################################
 ### Define project options for development mode ###
 ###################################################
-set(ALPA_DEV_OPTOINS "")
+set(ALPA_DEV_OPTIONS "")
 
-option(ALPA_STATIC_ANALYSIS "Enables static analisys tools (cppcheck and clang-tidy)" ON)
+option(ALPA_STATIC_ANALYSIS "Enables static analysis tools (cppcheck and clang-tidy)" ON)
 if(ALPA_STATIC_ANALYSIS)
   list(APPEND ALPA_DEV_OPTIONS 
                     ENABLE_CPPCHECK
@@ -95,7 +95,7 @@ if(ALPA_STATIC_ANALYSIS)
         list(APPEND IWYU_COMMAND_LINE_ARGS -I ${INCLUDE_PATH})
     endforeach()
     
-    add_standard_include_pathes()
+    add_standard_include_paths()
     foreach(EL_PATH ${CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES})
         list(APPEND IWYU_COMMAND_LINE_ARGS -isystem ${EL_PATH})
     endforeach()

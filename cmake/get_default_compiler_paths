@@ -34,10 +34,10 @@ def get_compiler_response(compiler_exec: str) -> str:
 def main():
     parser = argparse.ArgumentParser(prog="CompilerDefaultIncludeGetter",
                                      description="Script will parse compiler output and "
-                                     "return list of default compiler pathes",
+                                     "return list of default compiler paths",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("compiler", action='store', type=str,
-                        help="Path to the compiler executable, which default pathes"
+                        help="Path to the compiler executable, which default paths"
                         "we are interested in.")
     args = parser.parse_args()
     print(parse_includes(get_compiler_response(args.compiler)), end="")
