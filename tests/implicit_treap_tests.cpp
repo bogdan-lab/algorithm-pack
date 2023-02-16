@@ -82,7 +82,7 @@ TEST(ImplicitTreapTest, IteratorWalk1) {
   const std::vector<int> input{1, 2, 3, 4, 5, 6, 7};
   alpa::ImplicitTreap<int> test(input, /*seed=*/input.size());
   alpa::ImplicitTreap<int>::Iterator begin = test.Begin();
-  alpa::ImplicitTreap<int>::ConstIterator cbegin = begin;
+  auto cbegin = alpa::ImplicitTreap<int>::ConstIterator{begin};
   for (const auto& el : input) {
     EXPECT_EQ(el, *begin);
     EXPECT_EQ(*begin, *cbegin);
@@ -720,13 +720,17 @@ TEST(ImplicitTreapTest, RandomAccessIteratorDifference) {
     auto cit_to = cit + index_to;
     EXPECT_EQ(it_to - it_from, expected);
     EXPECT_EQ(cit_to - cit_from, expected);
-    EXPECT_EQ(cit_to - it_from, expected);
-    EXPECT_EQ(it_to - cit_from, expected);
+    EXPECT_EQ(cit_to - alpa::ImplicitTreap<int>::ConstIterator{it_from},
+              expected);
+    EXPECT_EQ(alpa::ImplicitTreap<int>::ConstIterator(it_to) - cit_from,
+              expected);
   }
   EXPECT_EQ(test.End() - it, test.Size());
-  EXPECT_EQ(test.End() - cit, test.Size());
+  EXPECT_EQ(alpa::ImplicitTreap<int>::ConstIterator{test.End()} - cit,
+            test.Size());
   EXPECT_EQ(test.CEnd() - cit, test.Size());
-  EXPECT_EQ(test.End() - cit, test.Size());
+  EXPECT_EQ(alpa::ImplicitTreap<int>::ConstIterator{test.End()} - cit,
+            test.Size());
 }
 
 TEST(ImplicitTreapTest, Extract1) {

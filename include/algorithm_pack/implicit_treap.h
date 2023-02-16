@@ -314,7 +314,9 @@ class ImplicitTreap {
      *
      * @return ConstIterator object created from this iterator.
      */
-    operator ConstIterator() const { return ConstIterator{curr_node_, host_}; }
+    explicit operator ConstIterator() const {
+      return ConstIterator{curr_node_, host_};
+    }
     /**
      * @brief Performs pre-increment operation. Should be called only on valid
      * iterators.
@@ -779,8 +781,8 @@ class ImplicitTreap {
    * @brief Describes single element stored in the treap.
    */
   struct Node {
-    Node(const T& val, uint64_t g_priority)
-        : priority(g_priority), value(val) {}
+    Node(T val, uint64_t g_priority)
+        : priority(g_priority), value(std::move(val)) {}
     Node* left = nullptr;
     Node* right = nullptr;
     Node* parent = nullptr;
@@ -1021,11 +1023,13 @@ class ImplicitTreap {
   static Node* ShiftNode(const Node* curr_node, const Node* root, int shift) {
     size_t curr_number = GetElementNumber(curr_node);
     if (shift < 0 && curr_number > static_cast<size_t>(-shift)) {
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
       return GetElement(const_cast<Node*>(root),
                         curr_number - static_cast<size_t>(-shift));
     }
     if (shift >= 0 &&
         curr_number + static_cast<size_t>(shift) <= root->tree_size) {
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
       return GetElement(const_cast<Node*>(root),
                         curr_number + static_cast<size_t>(shift));
     }
@@ -1055,7 +1059,7 @@ class ImplicitTreap {
   }
 
   Node* root_ = nullptr;
-  std::mt19937_64 rnd_;
+  std::mt19937_64 rnd_{std::random_device{}()};
   size_t size_ = 0;
 };
 

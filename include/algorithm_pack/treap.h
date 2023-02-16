@@ -33,6 +33,10 @@ class Treap {
    * The seed is used in random generator for providing priorities.
    */
   explicit Treap(uint64_t seed) : rnd_(seed) {}
+  Treap(const Treap&) = delete;
+  Treap(Treap&&) = delete;
+  Treap& operator=(const Treap&) = delete;
+  Treap& operator=(Treap&&) = delete;
   /**
    * @brief Destroy the Treap object by deleting each node.
    */
@@ -266,7 +270,7 @@ class Treap {
   }
 
   Node* root_ = nullptr;
-  std::mt19937_64 rnd_;
+  std::mt19937_64 rnd_{std::random_device{}()};
   size_t size_ = 0;
 };
 }  // namespace alpa
