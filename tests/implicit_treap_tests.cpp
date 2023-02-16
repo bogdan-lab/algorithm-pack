@@ -2,7 +2,9 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <numeric>
 #include <random>
