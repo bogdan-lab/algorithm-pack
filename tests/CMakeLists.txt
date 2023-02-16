@@ -10,6 +10,7 @@ if(ALPA_STATIC_ANALYSIS)
                     CPPCHECK_OPTIONS 
                         # --template is set automatically inside project_options internals according to the generator
                         --enable=all 
+                        --suppress=missingIncludeSystem
                         --inconclusive 
                         --language=c++
                         # --std is set automatically inside project_options internals according to CMAKE_CXX_STANDARD value
